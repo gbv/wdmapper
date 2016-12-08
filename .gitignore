@@ -1,0 +1,11 @@
+*.pyc
+*.egg
+*.egg-info
+.eggs
+dist
+
+.coverage
+coverage.*
+.cache
+
+/user-config.py
