@@ -9,3 +9,5 @@ coverage.*
 .cache
 
 /user-config.py
+.tox
+build/

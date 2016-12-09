@@ -1,1 +1,1 @@
-from .wdmapper import main
+from .wdmapper import run

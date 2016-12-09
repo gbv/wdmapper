@@ -5,6 +5,9 @@ python:
   - "3.4"
   - "3.5"
 before_install:
-  - pip install pytest pytest-cov
+  - pip install -r dev-requirements.txt --upgrade
+  - pip install coveralls
 script:
-  - PYTHONPATH=. py.test
+  - PYTHONPATH=. pytest
+after_success:
+  - coveralls

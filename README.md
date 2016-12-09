@@ -1,6 +1,7 @@
 # wdmapper
 
 [![Build Status](https://travis-ci.org/gbv/wdmapper.png?branch=master)](https://travis-ci.org/gbv/wdmapper)
+[![Coverage Status](https://coveralls.io/repos/github/gbv/wdmapper/badge.svg?branch=master)](https://coveralls.io/github/gbv/wdmapper?branch=master)
 [![Requires.io](https://requires.io/github/gbv/wdmapper/requirements.svg?branch=master)](https://requires.io/github/gbv/wdmapper/requirements?branch=master)
 
 Wikidata authority file mapping tool
@@ -28,11 +29,9 @@ Run `wdmapper -h` for basic help.
 
 File `user-config.py` as required by pywikibot is created if needed.
 
-By default the script reads comma separated values from STDIN
-The comma separated values
+By default the script reads comma separated values from STDIN.
 
 ## License
 
 The source code is available at <https://github.com/gbv/wdmapper> and licensed
 under the terms of the MIT license.
-
