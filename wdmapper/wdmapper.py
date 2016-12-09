@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 import sys
 import os
@@ -52,6 +53,12 @@ def read_csv(csv_file, callback, header=True):
             callback(mapping)
 
 
+def exit_with_message(msg):
+    # required for python 2
+    sys.stderr.write(msg + "\n")
+    sys.exit(1)
+
+
 def parse_args(argv):
     """parse command line arguments"""
 
@@ -63,11 +70,13 @@ def parse_args(argv):
                         help='input file to read from (default: - for STDIN)')
     parser.add_argument('-H', dest='csv_header', action='store_true',
                         help='read CSV without header')
-    parser.add_argument('-f', '--format', dest='fmt',
+    parser.add_argument('-f', '--format', metavar='F',
                         help='input format (default: CSV)')
-    parser.add_argument('-l', '--limit', dest='lmt', type=int, default=0,
+    parser.add_argument('-l', '--limit', metavar='N', type=int, default=0,
                         help='maximum number of mappings to process')
 
+    parser.add_argument('command', nargs='?',
+                        help='get (default and currently the only command)')
     parser.add_argument('source', nargs='?',
                         help='source property')
     parser.add_argument('target', nargs='?',
@@ -75,15 +84,24 @@ def parse_args(argv):
 
     args = parser.parse_args(argv)
 
-    args.limit = args.lmt
-    if args.fmt:
-        args.format = args.fmt.upper()
+    if args.format:
+        args.format = args.format.upper()
         if args.format not in supported_formats:
             sys.exit('unknown format: ' + args.fmt)
 
-    if not argv:
+    if not argv or args.command == 'help':
         parser.print_help()
         sys.exit(1)
+
+    commands = ['get', 'check', 'diff']
+
+    if args.command not in commands:
+        if args.target is None:
+            args.target = args.source
+            args.source = args.command
+            args.command = 'get'
+        else:
+            exit_with_message("command must be one of " + ", ".join(commands))
 
     return args
 
@@ -96,8 +114,16 @@ def process_mapping(mapping):
     # TODO: add statement with target_property = args.target unless it exists
 
 
-def run(*argv):
-    args = parse_args(argv[1:])
+def process_mapping(mapping):
+    print('{m[source]} | {m[target]}'.format(m=mapping))
+
+    # TODO: lookup item with source_property = mapping.source in Wikidata
+    # TODO: check for existence of statement with target_property
+    # TODO: add statement with target_property = args.target unless it exists
+
+
+def run(*args):
+    args = parse_args(list(args))
 
     source_property = wikidata_property(args.source)
     target_property = wikidata_property(args.target)
@@ -113,5 +139,10 @@ def run(*argv):
         # read mappings from input by default
         read_csv(input_file, process_mapping, header=args.csv_header)
 
+
+def main():
+    run(*(sys.argv[1:]))
+
+
 if __name__ == '__main__':
-    run(sys.argv[1:])
+    main()
