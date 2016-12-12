@@ -1,11 +1,15 @@
-#!/usr/bin/env python
 import argparse
 import sys
 import os
 import io
 import csv
+import re
+from .sparql import sparql_query
 
 supported_formats = ['CSV']
+supported_commands = ['get', 'echo', 'check', 'diff', 'add', 'sync', 'help']
+
+__version__ = "0.0.0"
 
 
 def setup_pywikibot():
@@ -19,7 +23,7 @@ def setup_pywikibot():
         # create user-config.py if needed
         if os.path.exists('user-config.py'):
             exception = e
-            sys.exit(exception)
+            exit(exception)
         # print('user-config.py created')
         file = open('user-config.py', 'w')
         file.write("\n".join([
@@ -30,14 +34,72 @@ def setup_pywikibot():
         ]))
         file.close()
         import pywikibot
-        site = pywikibot.Site('en', 'wikipedia')
+        site = pywikibot.Site()
         repo = site.data_repository()
+
+
+class Property(object):
+    """Representation of a Wikidata property"""
+
+    def __init__(self, data):
+        self.uri = data['p']
+        self.label = data['pLabel']
+        self.regex = data['regex']
+        self.pattern = data['pattern']
+
+        m = property_pattern.match(self.uri)
+        self.id = m.group('id')
+
+
+property_pattern = re.compile(r"""
+    ^
+    (http://www.wikidata.org/entity/
+    |https?://www.wikidata.org/wiki/Property:)?
+    [Pp]
+    (?P<id>[0-9]+)
+    $""", re.VERBOSE)
+
+namespace_pattern = re.compile('^[a-z]+:[^<>]+')
+
+get_property_query = """
+SELECT ?p ?pLabel ?pattern ?regex WHERE {{
+    {0} .
+    ?p a wikibase:Property .
+    OPTIONAL {{ ?p wdt:P1630 ?pattern }}
+    OPTIONAL {{ ?p wdt:P1793 ?regex }}
+    SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{1}" }}
+}}
+"""
 
 
 def wikidata_property(s):
     """check and normalize property value such as 'P32'"""
-    # TODO: actually check and normalize
-    return s
+
+    m = property_pattern.match(s)
+    if m:
+        # get by property id
+        uri = 'http://www.wikidata.org/entity/P' + m.group('id')
+        where = 'BIND(<' + uri + '> AS ?p)'
+    elif namespace_pattern.match(s):
+        # get by formatting URL (P1630)
+        # TODO: escape " in URL
+        # TODO: only append $1 if not included
+        where = '?p wdt:P1630 "%s"' % (s + '$1')
+    else:
+        # get by name
+        # TODO: escape " in name
+        # TODO: ignore language
+        where = '?p rdfs:label "%s"@en' % s
+
+    query = get_property_query.format(where, 'en')
+    # print(query)
+    res = sparql_query(query)
+    if not res:
+        exit("not a property: " + s)
+    if len(res) > 1:
+        exit("multiple properties: " + s)
+
+    return Property(res[0])
 
 
 def read_csv(csv_file, callback, header=True):
@@ -53,32 +115,42 @@ def read_csv(csv_file, callback, header=True):
             callback(mapping)
 
 
-def exit_with_message(msg):
-    # required for python 2
+def process_mapping(mapping):
+    print('{m[source]} | {m[target]}'.format(m=mapping))
+
+    # TODO: lookup item with source_property = mapping.source in Wikidata
+    # TODO: check for existence of statement with target_property
+    # TODO: add statement with target_property = args.target unless it exists
+
+
+def exit(msg, code=1):
+    """print error message and exit."""
     sys.stderr.write(msg + "\n")
-    sys.exit(1)
+    sys.exit(code)
 
 
 def parse_args(argv):
-    """parse command line arguments"""
+    """parse command line arguments."""
 
-    parser = argparse.ArgumentParser(description='Manage Wikidata authority file mappings')
+    parser = argparse.ArgumentParser(description='Manage Wikidata authority file mappings.')
 
-    parser.add_argument('-n', dest='edit', action='store_false', default=True,
-                        help='don\'t do any edits on Wikidata')
-    parser.add_argument('-i', '--input', default='-',
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__,
+                        help='show version number of this script')
+    parser.add_argument('-i', '--input', default='-', metavar='IN',
                         help='input file to read from (default: - for STDIN)')
-    parser.add_argument('-H', dest='csv_header', action='store_true',
-                        help='read CSV without header')
     parser.add_argument('-f', '--format', metavar='F',
                         help='input format (default: CSV)')
+    parser.add_argument('-H', '--no-header', dest='csv_header', action='store_true',
+                        help='read CSV without header')
     parser.add_argument('-l', '--limit', metavar='N', type=int, default=0,
                         help='maximum number of mappings to process')
+    parser.add_argument('-n', '--no-edit', dest='edit', action='store_false', default=True,
+                        help='don\'t do any edits on Wikidata')
 
     parser.add_argument('command', nargs='?',
-                        help='get (default and currently the only command)')
+                        help=' / '.join(supported_commands))
     parser.add_argument('source', nargs='?',
-                        help='source property')
+                        help='source property (id, URL, URI, or label)')
     parser.add_argument('target', nargs='?',
                         help='target property')
 
@@ -87,62 +159,47 @@ def parse_args(argv):
     if args.format:
         args.format = args.format.upper()
         if args.format not in supported_formats:
-            sys.exit('unknown format: ' + args.fmt)
+            exit('unknown format: ' + args.fmt)
 
     if not argv or args.command == 'help':
         parser.print_help()
         sys.exit(1)
 
-    commands = ['get', 'check', 'diff']
-
-    if args.command not in commands:
+    if args.command not in supported_commands:
         if args.target is None:
             args.target = args.source
             args.source = args.command
             args.command = 'get'
         else:
-            exit_with_message("command must be one of " + ", ".join(commands))
+            exit("command must be one of " + ", ".join(supported_commands))
 
     return args
-
-
-def process_mapping(mapping):
-    print('{m[source]} | {m[target]}'.format(m=mapping))
-
-    # TODO: lookup item with source_property = mapping.source in Wikidata
-    # TODO: check for existence of statement with target_property
-    # TODO: add statement with target_property = args.target unless it exists
-
-
-def process_mapping(mapping):
-    print('{m[source]} | {m[target]}'.format(m=mapping))
-
-    # TODO: lookup item with source_property = mapping.source in Wikidata
-    # TODO: check for existence of statement with target_property
-    # TODO: add statement with target_property = args.target unless it exists
 
 
 def run(*args):
     args = parse_args(list(args))
 
-    source_property = wikidata_property(args.source)
-    target_property = wikidata_property(args.target)
+    if args.source is not None:
+        source_property = wikidata_property(args.source)
+    if args.target is not None:
+        target_property = wikidata_property(args.target)
 
-    setup_pywikibot()
+    if args.command in ['add','sync']:
+        setup_pywikibot()
 
-    if (args.input and args.input != '-'):
-        input_file = io.open(args.input, 'r', encoding='utf8')
+    if (args.command == 'echo'):
+        if (args.input and args.input != '-'):
+            input_file = io.open(args.input, 'r', encoding='utf8')
+        else:
+            input_file = sys.stdin
+
+        if not args.source and not args.target:
+            # read mappings from input by default
+            read_csv(input_file, process_mapping, header=args.csv_header)
     else:
-        input_file = sys.stdin
-
-    if not args.source and not args.target:
-        # read mappings from input by default
-        read_csv(input_file, process_mapping, header=args.csv_header)
+        exit("command %s is not implemented yet" % args.command)
 
 
 def main():
+    """entry point to run from command line after installation."""
     run(*(sys.argv[1:]))
-
-
-if __name__ == '__main__':
-    main()

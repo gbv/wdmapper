@@ -1,6 +1,6 @@
 import pytest
 
-from wdmapper import run
+from wdmapper import run, __version__
 
 
 def test_help_as_default(capsys):

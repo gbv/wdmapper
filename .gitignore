@@ -11,3 +11,4 @@ coverage.*
 /user-config.py
 .tox
 build/
+apicache
