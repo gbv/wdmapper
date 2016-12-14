@@ -32,7 +32,7 @@ syntax is
 wdmapper [command] [source] [target]
 ~~~
 
-with `info` as default command. Source and target are Wikidata property given by
+with `property` as default command. Source and target are Wikidata property given by
 any of
 
 * property id (e.g. "P214")
@@ -50,9 +50,9 @@ needed.
 
 ### Commands
 
-#### info
+#### property
 
-Show information about given Wikidata properties. Try `wdmapper P214` for an example.
+Show information about a given Wikidata property. Try `wdmapper P214` for an example.
 
 #### get
 

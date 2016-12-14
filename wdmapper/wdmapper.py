@@ -1,13 +1,18 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+"""Manage Wikidata authority file mappings."""
+
 import argparse
 import sys
 import os
 import io
 import csv
 import re
+import json
 from .sparql import sparql_query
 
 supported_formats = ['CSV']
-supported_commands = ['get', 'echo', 'check', 'diff', 'add', 'sync', 'info', 'help']
+supported_commands = ['get', 'echo', 'check', 'diff', 'add', 'sync', 'property', 'help']
 
 __version__ = "0.0.0"
 
@@ -94,20 +99,20 @@ def wikidata_property(s):
         where = 'BIND(<' + uri + '> AS ?p)'
     elif namespace_pattern.match(s):
         # get by formatting URL (P1630)
-        # TODO: escape " in URL
-        # TODO: only append $1 if not included
-        where = '?p wdt:P1630 "%s"' % (s + '$1')
+        formatter_url = json.dumps(s)   # quote and escape literal
+        if formatter_url.find('$1') == -1:
+            formatter_url += '$1'
+        where = '?p wdt:P1630 %s' % formatter_url
     else:
-        # get by name
-        # TODO: escape " in name
-        # TODO: ignore language
-        where = '?p rdfs:label "%s"@en' % s
+        # get by label
+        label = json.dumps(s)           # quote and escape literal
+        where = '?p rdfs:label ?l . FILTER (str(?l) = %s)' % label
 
     query = get_property_query.format(where, 'en')
-    # print(query)
     res = sparql_query(query)
+
     if not res:
-        exit("not a property: " + s)
+        exit("property not found: " + s)
     if len(res) > 1:
         exit("multiple properties: " + s)
 
@@ -144,7 +149,8 @@ def exit(msg, code=1):
 def parse_args(argv):
     """parse command line arguments."""
 
-    parser = argparse.ArgumentParser(description='Manage Wikidata authority file mappings.')
+    epilog = "See <https://github.com/gbv/wdmapper#readme> for details."
+    parser = argparse.ArgumentParser(description=__doc__, epilog=epilog)
 
     parser.add_argument('-V', '--version', action='store_true',
                         help='show version number of this script')
@@ -185,7 +191,7 @@ def parse_args(argv):
         if args.target is None:
             args.target = args.source
             args.source = args.command
-            args.command = 'info'
+            args.command = 'property'
         else:
             exit("command must be one of " + ", ".join(supported_commands))
 
@@ -193,6 +199,8 @@ def parse_args(argv):
 
 
 def run(*args):
+    """Run from module with given command line arguments."""
+
     args = parse_args(list(args))
 
     properties = map(lambda p: wikidata_property(p),
@@ -201,7 +209,7 @@ def run(*args):
     if args.command in ['add','sync']:
         setup_pywikibot()
 
-    if (args.command == 'info'):
+    if (args.command == 'property'):
         for p in properties:
             print(p)
 
@@ -220,5 +228,7 @@ def run(*args):
 
 
 def main():
-    """entry point to run from command line after installation."""
-    run(*(sys.argv[1:]))
+    """Run from command line after installation."""
+
+    args = map(lambda arg: arg.decode(sys.stdout.encoding), sys.argv[1:])
+    run(*args)
