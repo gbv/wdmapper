@@ -2,7 +2,7 @@ import pytest
 import io
 import sys
 
-from wdmapper import run
+from wdmapper.cli import run
 
 
 def test_read_csv_stdin(capsys):

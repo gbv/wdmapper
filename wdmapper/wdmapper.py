@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 """Manage Wikidata authority file mappings."""
 
-import argparse
+from __future__ import unicode_literals
 import sys
 import os
 import io
 import csv
-import re
-import json
+
+from .exceptions import WdmapperError
 from .sparql import sparql_query
-
-supported_formats = ['CSV']
-supported_commands = ['get', 'echo', 'check', 'diff', 'add', 'sync', 'property', 'help']
-
-__version__ = "0.0.0"
+from .property import Property
+from . import beacon
 
 
 def setup_pywikibot():
@@ -27,8 +23,7 @@ def setup_pywikibot():
     except RuntimeError as e:
         # create user-config.py if needed
         if os.path.exists('user-config.py'):
-            exception = e
-            exit(exception)
+            raise
         # print('user-config.py created')
         file = open('user-config.py', 'w')
         file.write("\n".join([
@@ -43,80 +38,41 @@ def setup_pywikibot():
         repo = site.data_repository()
 
 
-class Property(object):
-    """Representation of a Wikidata property"""
+def command_get(args):
+    properties = args.properties
 
-    def __init__(self, data):
-        self.uri = data['p']
-        self.label = data['label']
-        self.regex = data['regex']
-        self.pattern = data['pattern']
-
-        m = property_pattern.match(self.uri)
-        self.id = 'P' + m.group('id')
-
-    def __repr__(self):
-        s = "{label} ({id})\n<{uri}>\n".format(**self.__dict__)
-        if self.pattern:
-            s += self.pattern
-        s += "\n"
-        if self.regex:
-            s += self.regex
-        return s
-
-
-property_pattern = re.compile(r"""
-    ^
-    (http://www.wikidata.org/entity/
-    |https?://www.wikidata.org/wiki/Property:)?
-    [Pp]
-    (?P<id>[0-9]+)
-    $""", re.VERBOSE)
-
-namespace_pattern = re.compile('^[a-z]+:[^<>]+')
-
-get_property_query = """
-SELECT ?p ?label ?pattern ?regex WHERE {{
-    {0} .
-    ?p a wikibase:Property .
-    OPTIONAL {{ ?p wdt:P1630 ?pattern }}
-    OPTIONAL {{ ?p wdt:P1793 ?regex }}
-    SERVICE wikibase:label {{
-        bd:serviceParam wikibase:language "{1}" .
-        ?p rdfs:label ?label .
-    }}
-}}
-"""
-
-
-def wikidata_property(s):
-    """check and normalize property value such as 'P32'"""
-
-    m = property_pattern.match(s)
-    if m:
-        # get by property id
-        uri = 'http://www.wikidata.org/entity/P' + m.group('id')
-        where = 'BIND(<' + uri + '> AS ?p)'
-    elif namespace_pattern.match(s):
-        # get by formatting URL (P1630)
-        formatter_url = json.dumps(s)   # quote and escape literal
-        if formatter_url.find('$1') == -1:
-            formatter_url += '$1'
-        where = '?p wdt:P1630 %s' % formatter_url
+    if len(properties) == 1:
+        sparql = """\
+SELECT ?item ?targetId WHERE {{
+    ?item wdt:{target[id]} ?targetId .
+}}"""
+        wd = Property({
+                      'label':'Wikidata ID',
+                      'pattern':'http://www.wikidata.org/entity/'
+                      })
+        fields = {'source':wd, 'target':properties[0]}
     else:
-        # get by label
-        label = json.dumps(s)           # quote and escape literal
-        where = '?p rdfs:label ?l . FILTER (str(?l) = %s)' % label
+        sparql = """\
+SELECT ?item ?sourceId ?targetId WHERE {{
+    ?item wdt:{source[id]} ?sourceId .
+    ?item wdt:{target[id]} ?targetId .
+}}"""
+        fields = {'source':properties[0], 'target':properties[1]}
 
-    query = get_property_query.format(where, 'en')
+    query = sparql.format(**fields)
+    if (args.limit):
+        query += ' LIMIT {:d}'.format(args.limit)
+
+    beacon.print_header(**fields)
+
     res = sparql_query(query)
 
-    if not res:
-        exit("property not found: " + s)
-    if len(res) > 1:
-        exit("multiple properties: " + s)
-
-    return Property(res[0])
+    for m in res:
+        qid = m['item'].split('/')[-1]
+        if len(properties) == 1:
+            beacon.print_link(source=qid, target=m['targetId'])
+        else:
+            beacon.print_link(source=m['sourceId'], target=m['targetId'], annotation=qid)
 
 
 def read_csv(csv_file, callback, header=True):
@@ -140,95 +96,39 @@ def process_mapping(mapping):
     # TODO: add statement with target_property = args.target unless it exists
 
 
-def exit(msg, code=1):
-    """print error message and exit."""
-    sys.stderr.write(msg + "\n")
-    sys.exit(code)
+def command_property(args):
+    for p in args.properties:
+        print(p)
 
 
-def parse_args(argv):
-    """parse command line arguments."""
+def command_echo(args):
+    filename = args.input
+    if (filename and filename != '-'):
+        input_file = io.open(filename, 'r', encoding='utf8')
+    else:
+        input_file = sys.stdin
 
-    epilog = "See <https://github.com/gbv/wdmapper#readme> for details."
-    parser = argparse.ArgumentParser(description=__doc__, epilog=epilog)
-
-    parser.add_argument('-V', '--version', action='store_true',
-                        help='show version number of this script')
-    parser.add_argument('-i', '--input', default='-', metavar='IN',
-                        help='input file to read from (default: - for STDIN)')
-    parser.add_argument('-f', '--format', metavar='F',
-                        help='input format (default: CSV)')
-    parser.add_argument('-H', '--no-header', dest='csv_header', action='store_true',
-                        help='read CSV without header')
-    parser.add_argument('-l', '--limit', metavar='N', type=int, default=0,
-                        help='maximum number of mappings to process')
-    parser.add_argument('-n', '--no-edit', dest='edit', action='store_false', default=True,
-                        help='don\'t do any edits on Wikidata')
-
-    parser.add_argument('command', nargs='?',
-                        help=' / '.join(supported_commands))
-    parser.add_argument('source', nargs='?',
-                        help='source property (id, URL, URI, or label)')
-    parser.add_argument('target', nargs='?',
-                        help='target property')
-
-    args = parser.parse_args(argv)
-
-    if not argv or args.command == 'help':
-        parser.print_help()
-        sys.exit(1)
-
-    if args.version:
-        print("wdmapper %s" % __version__)
-        sys.exit(0)
-
-    if args.format:
-        args.format = args.format.upper()
-        if args.format not in supported_formats:
-            exit('unknown format: ' + args.fmt)
-
-    if args.command not in supported_commands:
-        if args.target is None:
-            args.target = args.source
-            args.source = args.command
-            args.command = 'property'
-        else:
-            exit("command must be one of " + ", ".join(supported_commands))
-
-    return args
+    if not args.properties:
+        # read mappings from input by default
+        read_csv(input_file, process_mapping, header=args.csv_header)
 
 
-def run(*args):
-    """Run from module with given command line arguments."""
+def wdmapper(args):
+    """Execute wdmapper with arguments."""
 
-    args = parse_args(list(args))
+    # look up given properties
+    args.properties = [Property.lookup(p) for p in args.properties]
 
-    properties = map(lambda p: wikidata_property(p),
-                     filter(None, [args.source, args.target]))
+    if args.command == 'property':
+        command_property(args)
 
-    if args.command in ['add','sync']:
-        setup_pywikibot()
+    elif args.command == 'get':
+        command_get(args)
 
-    if (args.command == 'property'):
-        for p in properties:
-            print(p)
-
-    elif (args.command == 'echo'):
-        if (args.input and args.input != '-'):
-            input_file = io.open(args.input, 'r', encoding='utf8')
-        else:
-            input_file = sys.stdin
-
-        if not args.source and not args.target:
-            # read mappings from input by default
-            read_csv(input_file, process_mapping, header=args.csv_header)
+    elif args.command == 'echo':
+        command_echo(args)
 
     else:
-        exit("command %s is not implemented yet" % args.command)
-
-
-def main():
-    """Run from command line after installation."""
-
-    args = map(lambda arg: arg.decode(sys.stdout.encoding), sys.argv[1:])
-    run(*args)
+        if args.command in ['add','sync']:
+            setup_pywikibot()
+        raise WdmapperError("command %s is not implemented yet" % args.command)

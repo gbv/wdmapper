@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """SPARQL Query interface to Wikidata."""
 
+from __future__ import unicode_literals
 import json
 import sys
 
@@ -15,10 +16,11 @@ else:
 WIKIDATA = 'http://query.wikidata.org/sparql'
 
 
-def sparql_query(query, endpoint=WIKIDATA):
+def sparql_query(query, endpoint=WIKIDATA, cache=True):
     url = '%s?query=%s' % (endpoint, quote(query))
     req = Request(url)
-    req.add_header('cache-control', 'no-cache')
+    if not cache:
+        req.add_header('cache-control', 'no-cache')
     req.add_header('Accept', 'application/sparql-results+json')
 
     res = urlopen(req).read()

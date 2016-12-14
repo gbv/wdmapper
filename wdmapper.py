@@ -2,7 +2,7 @@
 
 """Wrapper script to directly run wdmapper from source tree."""
 
-from wdmapper.wdmapper import main
+from wdmapper.cli import main
 
 if __name__ == '__main__':
     main()

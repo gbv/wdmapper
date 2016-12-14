@@ -2,14 +2,14 @@
 from setuptools import setup, find_packages
 import re
 
-__version__ = re.search(
+version = re.search(
     r'__version__\s*=\s*[\'"]([^\'"]+)[\'"]',
-    open('wdmapper/wdmapper.py').read()
+    open('wdmapper/version.py').read()
 ).group(1)
 
 setup(
     name='wdmapper',
-    version=__version__,
+    version=version,
     description='Wikidata authority file mapping tool',
     author='Jakob Voß',
     author_email='jakob.voss@gbv.de',
@@ -19,9 +19,11 @@ setup(
     install_requires=['pywikibot'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'pytest-pep8', 'pytest-cov'],
+    download_url = 'https://github.com/gbv/wdmapper/tarball/' + version,
+    keywords = ['wikidata', 'beacon', 'identifier'],
     entry_points={
         'console_scripts': [
-            'wdmapper=wdmapper:main'
+            'wdmapper=wdmapper.cli:main'
         ]
     }
 )

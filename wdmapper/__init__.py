@@ -1,1 +1,2 @@
-from .wdmapper import run, main, __version__
+from .wdmapper import wdmapper
+from .cli import main

@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import pytest
-
 from re import match
-from wdmapper import run
+
+from wdmapper.cli import run
+from wdmapper.property import Property
+
+
+def test_property_match():
+    pid = Property.match('http://www.wikidata.org/entity/P123')
+    assert pid == 'P123'
 
 
 def test_property(capsys):

@@ -12,3 +12,4 @@ coverage.*
 .tox
 build/
 apicache
+tmp

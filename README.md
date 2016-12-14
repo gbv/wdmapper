@@ -12,7 +12,8 @@ This tool is a command line application to manage mappings between authority fil
 
 ## Installation
 
-wdmapper has not been released yet, so you need to directly clone the git repository:
+wdmapper has not been released yet, so you need to directly clone the git
+repository:
 
 ~~~shell
 $ git clone https://github.com/gbv/wdmapper.git
@@ -32,8 +33,8 @@ syntax is
 wdmapper [command] [source] [target]
 ~~~
 
-with `property` as default command. Source and target are Wikidata property given by
-any of
+with `property` as default command. Source and target are Wikidata property
+given by any of
 
 * property id (e.g. "P214")
 * property URI/URL (e.g. "<http://www.wikidata.org/entity/P214>" 
@@ -42,8 +43,7 @@ any of
 
 Depending on command the script reads input mappings from a file or standard
 input, and mappings from Wikidata.  Arguments source and target are required
-for CSV input format but not in BEACON input format (*the latter not
-implemented yet*).
+for CSV input format but not in BEACON input format.
 
 File `user-config.py` (required by pywikibot) is created automatically, if
 needed.
@@ -52,17 +52,30 @@ needed.
 
 #### property
 
-Show information about a given Wikidata property. Try `wdmapper P214` for an example.
+Show information about given Wikidata properties. Examples:
+
+~~~shell
+$ wdmapper P214
+$ wdmapper "VIAF ID"
+$ wdmapper https://viaf.org/viaf/
+~~~
 
 #### get
 
-Get mappings from Wikidata.
+Get mappings from Wikidata. Default output format is BEACON. Examples:
 
-*not implemented yet*
+~~~shell
+$ wdmapper get P214 --limit 10
+$ wdmapper get P214 P2428 --limit 10
+~~~
+
+See [Wikidata BEACON generator] for an online tool to get the same data.
 
 #### echo
 
-Read input mappings.
+Read input mappings to check or translate between formats. 
+
+*Not fully implemented yet.*
 
 #### check
 
@@ -96,7 +109,9 @@ under the terms of the MIT license.
 
 ## See also
 
-* BEACON
+* BEACON format specification
+* [Wikidata BEACON generator]
 * pywikibot
 * ...
 
+[Wikidata BEACON generator]: https://tools.wmflabs.org/wikidata-todo/beacon.php

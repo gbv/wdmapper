@@ -1,7 +1,7 @@
 import pytest
 from re import match
 
-from wdmapper import run, __version__
+from wdmapper.cli import run
 
 
 def test_help_as_default(capsys):
