@@ -1,4 +1,5 @@
 import pytest
+from re import match
 
 from wdmapper import run, __version__
 
@@ -15,6 +16,13 @@ def test_help_as_command(capsys):
         run('help')
     out, err = capsys.readouterr()
     assert out.startswith('usage: ')
+
+
+def test_version(capsys):
+    with pytest.raises(SystemExit):
+        run('-V')
+    out, err = capsys.readouterr()
+    assert match(r'^wdmapper \d+\.\d+\.\d+', out)
 
 
 def test_unknown_command(capsys):

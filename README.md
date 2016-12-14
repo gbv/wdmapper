@@ -32,7 +32,7 @@ syntax is
 wdmapper [command] [source] [target]
 ~~~
 
-with `get` as default command. Source and target are Wikidata property given by
+with `info` as default command. Source and target are Wikidata property given by
 any of
 
 * property id (e.g. "P214")
@@ -49,6 +49,10 @@ File `user-config.py` (required by pywikibot) is created automatically, if
 needed.
 
 ### Commands
+
+#### info
+
+Show information about given Wikidata properties. Try `wdmapper P214` for an example.
 
 #### get
 

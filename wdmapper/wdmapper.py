@@ -7,7 +7,7 @@ import re
 from .sparql import sparql_query
 
 supported_formats = ['CSV']
-supported_commands = ['get', 'echo', 'check', 'diff', 'add', 'sync', 'help']
+supported_commands = ['get', 'echo', 'check', 'diff', 'add', 'sync', 'info', 'help']
 
 __version__ = "0.0.0"
 
@@ -30,7 +30,7 @@ def setup_pywikibot():
             "mylang = 'wikidata'",
             "family = 'wikidata'",
             "# usernames['wikidata']['wikidata'] = u'YOUR-USERNAME'",
-            "console_encoding = 'utf-8'",
+            "console_encoding = 'utf-8'", ""
         ]))
         file.close()
         import pywikibot
@@ -43,12 +43,21 @@ class Property(object):
 
     def __init__(self, data):
         self.uri = data['p']
-        self.label = data['pLabel']
+        self.label = data['label']
         self.regex = data['regex']
         self.pattern = data['pattern']
 
         m = property_pattern.match(self.uri)
-        self.id = m.group('id')
+        self.id = 'P' + m.group('id')
+
+    def __repr__(self):
+        s = "{label} ({id})\n<{uri}>\n".format(**self.__dict__)
+        if self.pattern:
+            s += self.pattern
+        s += "\n"
+        if self.regex:
+            s += self.regex
+        return s
 
 
 property_pattern = re.compile(r"""
@@ -62,12 +71,15 @@ property_pattern = re.compile(r"""
 namespace_pattern = re.compile('^[a-z]+:[^<>]+')
 
 get_property_query = """
-SELECT ?p ?pLabel ?pattern ?regex WHERE {{
+SELECT ?p ?label ?pattern ?regex WHERE {{
     {0} .
     ?p a wikibase:Property .
     OPTIONAL {{ ?p wdt:P1630 ?pattern }}
     OPTIONAL {{ ?p wdt:P1793 ?regex }}
-    SERVICE wikibase:label {{ bd:serviceParam wikibase:language "{1}" }}
+    SERVICE wikibase:label {{
+        bd:serviceParam wikibase:language "{1}" .
+        ?p rdfs:label ?label .
+    }}
 }}
 """
 
@@ -134,7 +146,7 @@ def parse_args(argv):
 
     parser = argparse.ArgumentParser(description='Manage Wikidata authority file mappings.')
 
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__,
+    parser.add_argument('-V', '--version', action='store_true',
                         help='show version number of this script')
     parser.add_argument('-i', '--input', default='-', metavar='IN',
                         help='input file to read from (default: - for STDIN)')
@@ -156,20 +168,24 @@ def parse_args(argv):
 
     args = parser.parse_args(argv)
 
+    if not argv or args.command == 'help':
+        parser.print_help()
+        sys.exit(1)
+
+    if args.version:
+        print("wdmapper %s" % __version__)
+        sys.exit(0)
+
     if args.format:
         args.format = args.format.upper()
         if args.format not in supported_formats:
             exit('unknown format: ' + args.fmt)
 
-    if not argv or args.command == 'help':
-        parser.print_help()
-        sys.exit(1)
-
     if args.command not in supported_commands:
         if args.target is None:
             args.target = args.source
             args.source = args.command
-            args.command = 'get'
+            args.command = 'info'
         else:
             exit("command must be one of " + ", ".join(supported_commands))
 
@@ -179,15 +195,17 @@ def parse_args(argv):
 def run(*args):
     args = parse_args(list(args))
 
-    if args.source is not None:
-        source_property = wikidata_property(args.source)
-    if args.target is not None:
-        target_property = wikidata_property(args.target)
+    properties = map(lambda p: wikidata_property(p),
+                     filter(None, [args.source, args.target]))
 
     if args.command in ['add','sync']:
         setup_pywikibot()
 
-    if (args.command == 'echo'):
+    if (args.command == 'info'):
+        for p in properties:
+            print(p)
+
+    elif (args.command == 'echo'):
         if (args.input and args.input != '-'):
             input_file = io.open(args.input, 'r', encoding='utf8')
         else:
@@ -196,6 +214,7 @@ def run(*args):
         if not args.source and not args.target:
             # read mappings from input by default
             read_csv(input_file, process_mapping, header=args.csv_header)
+
     else:
         exit("command %s is not implemented yet" % args.command)
 

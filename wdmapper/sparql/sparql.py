@@ -3,7 +3,10 @@
 
 import json
 import sys
-if sys.version_info[0] > 2:
+
+PYTHON3 = sys.version_info[0] > 2
+
+if PYTHON3:
     from urllib.parse import quote
     from urllib.request import Request, urlopen
 else:
@@ -19,6 +22,9 @@ def sparql_query(query, endpoint=WIKIDATA):
     req.add_header('Accept', 'application/sparql-results+json')
 
     res = urlopen(req).read()
+    if PYTHON3:
+        res = res.decode('utf8')
+
     if res:
         data = json.loads(res)
     if data and 'results' in data:
