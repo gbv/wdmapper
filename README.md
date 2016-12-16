@@ -12,14 +12,21 @@ This tool is a command line application to manage mappings between authority fil
 
 ## Installation
 
-wdmapper has not been released yet, so you need to directly clone the git
-repository:
+Install releases via pip
+
+~~~shell
+$ pip install wdmapper          # install global as root
+$ pip install wdmapper --user   # or local at ~/.local
+~~~
+
+To get latest developer version directly clone the git repository:
 
 ~~~shell
 $ git clone https://github.com/gbv/wdmapper.git
 $ cd wdmapper
-$ python setup.py install         # either global as root
-$ python setup.py install --user  # or local at ~/.local/
+$ git checkout dev                # optionally checkout some branch
+$ python setup.py install         # either
+$ python setup.py install --user  # or
 ~~~
 
 Minimum requirement: Python 2.7
