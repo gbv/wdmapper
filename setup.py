@@ -4,7 +4,7 @@ import re
 
 version = re.search(
     r'__version__\s*=\s*[\'"]([^\'"]+)[\'"]',
-    open('wdmapper/version.py').read()
+    open('wdmapper/wdmapper.py').read()
 ).group(1)
 
 setup(

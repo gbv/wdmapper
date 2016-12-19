@@ -5,12 +5,17 @@ from __future__ import unicode_literals
 import sys
 import os
 import io
-import csv
 
-from .exceptions import WdmapperError
+from .exceptions import WdmapperError, ArgumentError
 from .sparql import sparql_query
 from .property import Property
-from . import beacon
+from .format import beacon, csv
+
+__version__ = '0.0.1'
+"""Version number of module wdmapper."""
+
+commands = ['get', 'echo', 'check', 'diff', 'add', 'sync', 'property', 'help']
+"""List if available commands."""
 
 
 def setup_pywikibot():
@@ -39,6 +44,30 @@ def setup_pywikibot():
 
 
 def command_get(args):
+
+    metafields = {
+        'name': '{target[label]}',
+        'description': 'Mapping from {source[label]}s to {target[label]}s',
+        'prefix': '{source[beacon_pattern]}',
+        'target': '{target[beacon_pattern]}'
+    }
+
+    for f in metafields:
+        try:
+            metafields[f] = metafields[f].format(args.properties)
+        except KeyError:
+            metafields[f] = None
+
+    if args.to == 'beacon':
+        writer = beacon.writer(args.output, **metafields)
+    else:
+        writer = csv.writer(args.output)
+
+    for link in get_links(args):
+        writer.write_link(link)
+
+
+def get_links(args):
     properties = args.properties
 
     if len(properties) == 1:
@@ -63,37 +92,19 @@ SELECT ?item ?sourceId ?targetId WHERE {{
     if (args.limit):
         query += ' LIMIT {:d}'.format(args.limit)
 
-    beacon.print_header(**fields)
-
     res = sparql_query(query)
 
     for m in res:
         qid = m['item'].split('/')[-1]
         if len(properties) == 1:
-            beacon.print_link(source=qid, target=m['targetId'])
+            link = {'source':qid, 'target': m['targetId']}
         else:
-            beacon.print_link(source=m['sourceId'], target=m['targetId'], annotation=qid)
+            link = {'source':'sourceId', 'target':'targetId', 'annotation':qid}
+        yield link
 
-
-def read_csv(csv_file, callback, header=True):
-    if (header):
-        header = ['source', 'target', 'annotation']
-
-    for row in csv.reader(iter(csv_file.readline, '')):
-        if not header:
-            header = row
-        else:
-            mapping = []
-            mapping = {k: v.strip() for k, v in zip(header, row) if v != ''}
-            callback(mapping)
-
-
-def process_mapping(mapping):
-    print('{m[source]} | {m[target]}'.format(m=mapping))
-
-    # TODO: lookup item with source_property = mapping.source in Wikidata
-    # TODO: check for existence of statement with target_property
-    # TODO: add statement with target_property = args.target unless it exists
+# TODO: lookup item with source_property = mapping.source in Wikidata
+# TODO: check for existence of statement with target_property
+# TODO: add statement with target_property = args.target unless it exists
 
 
 def command_property(args):
@@ -102,23 +113,64 @@ def command_property(args):
 
 
 def command_echo(args):
-    filename = args.input
-    if (filename and filename != '-'):
-        input_file = io.open(filename, 'r', encoding='utf8')
-    else:
-        input_file = sys.stdin
 
-    if not args.properties:
-        # read mappings from input by default
-        read_csv(input_file, process_mapping, header=args.csv_header)
+    if args.properties:
+        return
+
+    reader = csv.reader(args.input, header=not args.no_header)
+
+    if args.to == 'beacon':
+        metafields = {}  # TODO
+        writer = beacon.writer(sys.stdout, **metafields)
+    else:
+        writer = csv.writer(sys.stdout, header=not args.no_header)
+
+    for link in reader:
+        writer.write_link(link)
+
+
+def check_args(args):
+    """Check and normalize wdmapper arguments."""
+
+    formats = {'csv':csv, 'beacon':beacon}
+
+    if args.format:
+        args.format = args.format.lower()
+        allow = [f for f in formats if hasattr(formats[f],'reader')]
+        if args.format not in allow:
+            raise ArgumentError('input format', allow=allow)
+
+    if args.to:
+        args.to = args.to.lower()
+        allow = [f for f in formats if hasattr(formats[f],'writer')]
+        if args.to not in allow:
+            raise ArgumentError('output format', allow=allow)
+
+    if args.command not in commands:
+        raise ArgumentError('command', allow=commands)
 
 
 def wdmapper(args):
     """Execute wdmapper with arguments."""
 
+    check_args(args)
+
+    # open input file
+    if (args.input and args.input != '-'):
+        args.input = io.open(args.input, 'r', encoding='utf8')
+    else:
+        args.input = sys.stdin
+
+    # open output file
+    if (args.output and args.output != '-'):
+        args.output = io.open(args.output, 'w', encoding='utf8')
+    else:
+        args.output = sys.stdout
+
     # look up given properties
     args.properties = [Property.lookup(p) for p in args.properties]
 
+    # execute command
     if args.command == 'property':
         command_property(args)
 

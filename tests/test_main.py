@@ -29,4 +29,4 @@ def test_unknown_command(capsys):
     with pytest.raises(SystemExit):
         run('x', 'P1', 'P2')
     out, err = capsys.readouterr()
-    assert err.startswith('command must be one of ')
+    assert err.startswith('command must be one of: ')
