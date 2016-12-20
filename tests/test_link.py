@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import pytest
+import collections
 
 from wdmapper.link import Link
 
@@ -39,3 +40,22 @@ def test_compare():
     assert a <= b
     b.annotation = 'a'
     assert a == b
+
+
+def test_sets():
+    a = Link('foo', 'bar', 'doz')
+    b = Link('foo', 'bar', 'doz')
+    c = Link('42')
+
+    assert isinstance(a, collections.Hashable)
+    assert hash(a) == hash(b)
+    assert hash(b) != hash(c)
+
+    s1 = set([a])
+    s2 = set([b])
+    s3 = set([c])
+
+    assert (s1 - s2) == set()
+    assert (s1 | s2) == set([a])
+    assert (s1 | s2 | s3) == set([a,b,c])
+    assert ((s1 | s2 | s3) - s1) == set([c])

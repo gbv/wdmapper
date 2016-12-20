@@ -92,9 +92,14 @@ Check whether all input mappings are also in Wikidata.
 
 #### diff
 
-Compare input mappings and mappings at Wikidata.
+Compare input mappings and mappings at Wikidata. This can be used for instance
+to regularly check whether mappings at Wikidata have been changed: 
 
-*not implemented yet*
+~~~shell
+$ wdmapper get P214 P2428 > mappings.csv
+$ # ...wait until Wikidata could have been modified...
+$ wdmapper diff P214 P2428 < mappings.csv
+~~~
 
 #### add
 

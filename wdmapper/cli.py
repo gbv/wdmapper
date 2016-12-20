@@ -23,15 +23,17 @@ def parse_args(argv):
     parser.add_argument('-f', '--from', dest='format', metavar='NAME',
                         help='input format (default: csv)')
     parser.add_argument('-t', '--to', metavar='NAME',
-                        help='output format (default: beacon)')
+                        help='output format (default: csv)')
     parser.add_argument('-H', '--no-header', dest='no_header', action='store_true',
-                        help='read CSV without header')
+                        help='read/write CSV/BEACON without header')
     parser.add_argument('-i', '--input', default='-', metavar='IN',
                         help='input file to read from (default: - for STDIN)')
     parser.add_argument('-o', '--output', default='-', metavar='OUT',
                         help='output file to write to (default: - for STDOUT)')
     parser.add_argument('-s', '--sort', action='store_true',
                         help='sort mappings for normalized output')
+    parser.add_argument('-C', '--no-cache', dest='no_cache', action='store_true',
+                        help='disable caching')
     parser.add_argument('-l', '--limit', metavar='N', type=int, default=0,
                         help='maximum number of mappings to process')
     parser.add_argument('-n', '--no-edit', dest='edit', action='store_false', default=True,
@@ -77,5 +79,6 @@ def run(*args):
 def main():
     """Run wdmapper from command line after installation."""
 
-    args = map(lambda arg: arg.decode(sys.stdout.encoding), sys.argv[1:])
+    encoding = sys.stdout.encoding or 'utf-8'
+    args = map(lambda arg: arg.decode(encoding), sys.argv[1:])
     run(*args)

@@ -27,10 +27,11 @@ def writer(stream, **meta):
 
 class Writer:
 
-    def __init__(self, stream, **meta):
+    def __init__(self, stream, header=True, **meta):
         self.stream = stream
         self.meta = meta
-        self.write_header()
+        if header:
+            self.write_header()
 
     def print(self, s):
         print(s, file=self.stream)

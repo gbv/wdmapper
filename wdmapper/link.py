@@ -19,7 +19,7 @@ class Link(object):
     """
     BEACON link element.
 
-    A Link consists of three tokens
+    A Link element consists of three tokens
 
     * a mandatory source token
     * an optional target token
@@ -28,7 +28,8 @@ class Link(object):
     All tokens are witespace-normalized (as defined by BEACON) Unicode strings.
     A missing token is equal to the empty string.
 
-    Links can be compared and represented with repr().
+    Link objects can be compared, represented with repr(), and hashed for
+    set-operations.
     """
 
     @staticmethod
@@ -44,6 +45,7 @@ class Link(object):
         self.source = source
         self.target = target
         self.annotation = annotation
+        self._hash = None
 
     @property
     def source(self):
@@ -73,13 +75,19 @@ class Link(object):
     def annotation(self, value):
         self._annotation = Link.whitespace_normalize(value)
 
+    def tokens(self):
+        return (self._source, self._target, self._annotation)
+
     def __lt__(self, other):
-        return ((self._source, self._target, self._annotation) <
-                (other._source, other._target, other._annotation))
+        return self.tokens() < other.tokens()
 
     def __eq__(self, other):
-        return ((self._source, self._target, self._annotation) ==
-                (other._source, other._target, other._annotation))
+        return self.tokens() == other.tokens()
+
+    def __hash__(self):
+        if self._hash is None:
+            self._hash = hash(self.tokens())
+        return self._hash
 
     def __repr__(self):
         args = [repr(self._source)]

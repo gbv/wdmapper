@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import sys
 import os
 import io
+import difflib
 
 from .exceptions import WdmapperError, ArgumentError
 from .sparql import sparql_query
@@ -12,7 +13,7 @@ from .property import Property
 from .link import Link
 from .format import beacon, csv
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 """Version number of module wdmapper."""
 
 commands = ['get', 'echo', 'check', 'diff', 'add', 'sync', 'property', 'help']
@@ -63,20 +64,37 @@ def command_get(args):
         except KeyError:
             metafields[f] = None
 
-    if args.to == 'beacon':
-        writer = beacon.writer(args.output, **metafields)
-    else:
-        writer = csv.writer(args.output)
+    writer = create_writer(args, metafields)
 
     for link in get_links_from_wikidata(args):
         writer.write_link(link)
 
 
+def create_writer(args, metafields={}):
+    header = not args.no_header
+    if args.to == 'beacon':
+        return beacon.writer(sys.stdout, header=header, **metafields)
+    else:
+        return csv.writer(sys.stdout, header=header)
+
+
 def command_diff(args):
-    # TODO: don't limit
-    wdlinks = get_links_from_wikidata(args)
-    reader = csv.reader(args.input, header=not args.no_header)
-    # TODO: sort links and use difflib
+    input_links = csv.reader(args.input, header=not args.no_header)
+    wikidata_links = get_links_from_wikidata(args)
+
+    # we could use difflib but set operations work as well and look better
+    a = set(list(wikidata_links))
+    b = set(list(input_links))
+
+    delta = [('-', l) for l in a - b] + [('+', l) for l in b - a]
+    delta = sorted(delta, key=lambda l: l[1])
+
+    args.no_header = True  # TODO: keep header?
+    writer = create_writer(args, {})
+
+    for op, link in delta:
+        args.output.write(op + ' ')
+        writer.write_link(link)
 
 
 def get_links_from_wikidata(args):
@@ -103,8 +121,11 @@ SELECT ?item ?source ?target WHERE {{
     query = sparql.format(**fields)
     if (args.limit):
         query += ' LIMIT {:d}'.format(args.limit)
+    if (args.sort):
+        query += '\nORDER BY ?source ?target'
 
-    res = sparql_query(query)
+    cache = not args.no_cache
+    res = sparql_query(query, cache=cache)
 
     for m in res:
         qid = m['item'].split('/')[-1]
@@ -128,13 +149,11 @@ def command_echo(args):
     if args.properties:
         return
 
-    reader = csv.reader(args.input, header=not args.no_header)
+    header = not args.no_header
+    reader = csv.reader(args.input, header=header)
 
-    if args.to == 'beacon':
-        metafields = {}  # TODO
-        writer = beacon.writer(sys.stdout, **metafields)
-    else:
-        writer = csv.writer(sys.stdout, header=not args.no_header)
+    # TODO: add metafields if read
+    writer = create_writer(args, {})
 
     for link in reader:
         writer.write_link(link)
@@ -160,6 +179,9 @@ def check_args(args):
     if args.command not in commands:
         raise ArgumentError('command', allow=commands)
 
+    if args.command == 'diff':
+        args.sort = True
+
 
 def wdmapper(args):
     """Execute wdmapper with arguments."""
@@ -179,7 +201,8 @@ def wdmapper(args):
         args.output = sys.stdout
 
     # look up given properties
-    args.properties = [Property.lookup(p) for p in args.properties]
+    cache = not args.no_cache
+    args.properties = [Property.lookup(p, cache=cache) for p in args.properties]
 
     # execute command
     if args.command == 'property':

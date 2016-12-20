@@ -52,7 +52,7 @@ class Property(object):
             return 'P' + m.group('id')
 
     @classmethod
-    def lookup(cls, s):
+    def lookup(cls, s, cache=True):
         """check and normalize property value such as 'P32'"""
 
         pid = Property.match(s)
@@ -83,7 +83,7 @@ class Property(object):
                     }}
                 }}""".format(where, 'en')
 
-        res = sparql_query(query)
+        res = sparql_query(query, cache=cache)
 
         if not res:
             raise WdmapperError("property not found: " + s)
