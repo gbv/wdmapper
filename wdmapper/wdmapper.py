@@ -9,6 +9,7 @@ import io
 from .exceptions import WdmapperError, ArgumentError
 from .sparql import sparql_query
 from .property import Property
+from .link import Link
 from .format import beacon, csv
 
 __version__ = '0.0.1'
@@ -52,9 +53,13 @@ def command_get(args):
         'target': '{target[beacon_pattern]}'
     }
 
+    props = {'source': args.properties[0]}
+    if len(args.properties) > 1:
+        props['target'] = args.properties[1]
+
     for f in metafields:
         try:
-            metafields[f] = metafields[f].format(args.properties)
+            metafields[f] = metafields[f].format(**props)
         except KeyError:
             metafields[f] = None
 
@@ -63,17 +68,24 @@ def command_get(args):
     else:
         writer = csv.writer(args.output)
 
-    for link in get_links(args):
+    for link in get_links_from_wikidata(args):
         writer.write_link(link)
 
 
-def get_links(args):
+def command_diff(args):
+    # TODO: don't limit
+    wdlinks = get_links_from_wikidata(args)
+    reader = csv.reader(args.input, header=not args.no_header)
+    # TODO: sort links and use difflib
+
+
+def get_links_from_wikidata(args):
     properties = args.properties
 
     if len(properties) == 1:
         sparql = """\
-SELECT ?item ?targetId WHERE {{
-    ?item wdt:{target[id]} ?targetId .
+SELECT ?item ?target WHERE {{
+    ?item wdt:{target[id]} ?target .
 }}"""
         wd = Property({
                       'label':'Wikidata ID',
@@ -82,9 +94,9 @@ SELECT ?item ?targetId WHERE {{
         fields = {'source':wd, 'target':properties[0]}
     else:
         sparql = """\
-SELECT ?item ?sourceId ?targetId WHERE {{
-    ?item wdt:{source[id]} ?sourceId .
-    ?item wdt:{target[id]} ?targetId .
+SELECT ?item ?source ?target WHERE {{
+    ?item wdt:{source[id]} ?source .
+    ?item wdt:{target[id]} ?target .
 }}"""
         fields = {'source':properties[0], 'target':properties[1]}
 
@@ -97,10 +109,9 @@ SELECT ?item ?sourceId ?targetId WHERE {{
     for m in res:
         qid = m['item'].split('/')[-1]
         if len(properties) == 1:
-            link = {'source':qid, 'target': m['targetId']}
+            yield Link(qid, m['target'])
         else:
-            link = {'source':'sourceId', 'target':'targetId', 'annotation':qid}
-        yield link
+            yield Link(m['source'], m['target'], qid)
 
 # TODO: lookup item with source_property = mapping.source in Wikidata
 # TODO: check for existence of statement with target_property
@@ -179,6 +190,9 @@ def wdmapper(args):
 
     elif args.command == 'echo':
         command_echo(args)
+
+    elif args.command == 'diff':
+        command_diff(args)
 
     else:
         if args.command in ['add','sync']:

@@ -5,6 +5,7 @@ import pytest
 import io
 
 from wdmapper.format import csv
+from wdmapper.link import Link
 
 
 def test_read():
@@ -13,7 +14,7 @@ def test_read():
     assert list(data) == []
 
     data = csv.reader(io.StringIO(s), header=False)
-    assert list(data) == [{'source':'fö','target':'b"r'}]
+    assert list(data) == [Link('fö', 'b"r')]
 
 
 def test_write():
@@ -21,5 +22,5 @@ def test_write():
     writer = csv.writer(out, header=True)
     assert out.getvalue() == "source, target, annotation\n"
 
-    writer.write_link({'source':'foo','target':'b"r'})
+    writer.write_link(Link('foo','b"r'))
     assert out.getvalue() == 'source, target, annotation\nfoo, "b""r"\n'

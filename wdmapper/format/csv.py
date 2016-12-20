@@ -7,6 +7,8 @@ import csv
 import json
 import sys
 
+from ..link import Link
+
 CSV_FIELDS = ['source', 'target', 'annotation']
 
 
@@ -26,9 +28,18 @@ def reader(stream, header=True):
         csv_reader = unicode_csv_reader(stream, skipinitialspace=True)
     for row in csv_reader:
         if header_row:
+            # TODO: simplify this
             mapping = []
-            mapping = {k: v.strip() for k, v in zip(header_row, row) if v != ''}
-            yield mapping
+            mapping = {k: v for k, v in zip(header_row, row) if v != ''}
+            try:
+                link = Link(mapping['source'])
+                if 'target' in mapping:
+                    link.target = mapping['target']
+                if 'annotation' in mapping:
+                    link.annotation = mapping['annotation']
+                yield link
+            except ValueError:
+                pass
         else:
             header_row = row
 
@@ -72,15 +83,12 @@ class Writer:
     def __init__(self, stream, header):
         self.stream = stream
         if (header):
-            self.write_link(dict(zip(CSV_FIELDS, CSV_FIELDS)))
+            self.write_link(Link('source', 'target', 'annotation'))
 
     def write_link(self, link):
         row = []
         for key in CSV_FIELDS:
-            if key in link and link[key] is not None:
-                row.append(self.escape(link[key]))
-            else:
-                row.append('')
+            row.append(self.escape(getattr(link,key)))
 
         if row[-1] == '':   # omit annotation if empty
             row.pop()

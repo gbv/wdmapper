@@ -3,6 +3,17 @@
 
 from __future__ import unicode_literals, print_function
 
+import sys
+
+from ..link import Link
+
+PY3 = sys.version_info[0] == 3
+if PY3:
+    text_type = str
+else:
+    text_type = unicode
+
+
 meta_fields = ['name', 'description', 'prefix', 'target',
                'creator', 'contact', 'homepage', 'feed', 'timestamp', 'update'
                'sourceset', 'targetset', 'institution',
@@ -29,24 +40,17 @@ class Writer:
         for key in meta_fields:
             if key in self.meta and self.meta[key] is not None:
                 value = self.meta[key]
-                if isinstance(value, list):
+                if isinstance(value, text_type):
                     value = [value]
                 for v in value:
                     self.print('#%s: %s' % (key.upper(), v))
         self.print('')
 
     def write_link(self, link):
-        row = [link['source']]
+        row = [link.source]
 
         # TODO: omit if possible
-        if 'annotation' in link and link['annotation'] is not None:
-            row.append(link['annotation'])
-        else:
-            row.append('')
-
-        if 'target' in link and link['target'] is not None:
-            row.append(link['target'])
-        else:
-            row.append('')
+        row.append(link.annotation)
+        row.append(link.target)
 
         self.print('|'.join(row))
