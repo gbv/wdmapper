@@ -13,3 +13,11 @@ coverage.*
 build/
 apicache
 tmp
+
+# Sphinx
+docs/_build
+docs/api
+
+# Vim
+*.swp
+*.swo
