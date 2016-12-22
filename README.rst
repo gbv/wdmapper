@@ -39,8 +39,8 @@ Installation
 Usage
 -----
 
-Run ``wdmapper help`` or ``wdmapper`` without arguments for basic help.
-The calling syntax is
+Run ``wdmapper help``, ``wdmapper -h`` or ``wdmapper --help`` for basic help.
+The general calling syntax is
 
 .. code:: shell
 
@@ -89,8 +89,8 @@ See `Wikidata BEACON
 generator <https://tools.wmflabs.org/wikidata-todo/beacon.php>`__ for an
 online tool to get the same data.
 
-echo
-^^^^
+convert
+^^^^^^^
 
 Read input mappings to check or translate between formats.
 

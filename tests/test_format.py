@@ -8,25 +8,48 @@ import sys
 from wdmapper.cli import run
 
 
-def test_read_csv_stdin(capsys):
-    sys.stdin = io.StringIO("foo,bar\n")
-    run('echo', '-H')
+# TODO: put this into test fixture file
+@pytest.fixture
+def stdin():
+    return lambda s: MockStdin(s)
+
+
+class MockStdin:
+    def __init__(self, data):
+        self.data = data
+        self.stdin = sys.stdin
+
+    def __enter__(self):
+        if sys.version_info[0] == 3:
+            # Python 3: sys.stdin is unicode
+            sys.stdin = io.StringIO(self.data)
+        else:
+            # Python 2: sys.stdin is bytes (UTF-8)
+            sys.stdin = io.BytesIO(self.data.encode('utf-8'))
+
+    def __exit__(self, type, value, traceback):
+        sys.stdin = self.stdin
+
+
+def test_read_csv_stdin(stdin, capsys):
+    with stdin("föö,bar\n"):
+        run('convert', '-H')
     out, err = capsys.readouterr()
-    expect = "foo, bar\n"
+    expect = "föö, bar\n"
     assert out == expect
 
 
 def test_read_csv_file(capsys):
-    run('echo', '-i', 'tests/simple.csv')
+    run('convert', '-i', 'tests/simple.csv')
     out, err = capsys.readouterr()
-    expect = "source, target, annotation\nxyz, 123\n"
+    expect = "source, target, annotation\nxyz, 123, ☃\n"
     assert out == expect
 
 
 def test_csv_to_beacon(capsys):
-    run('echo', '-i', 'tests/simple.csv', '-t', 'beacon')
+    run('convert', '-i', 'tests/simple.csv', '-t', 'beacon')
     out, err = capsys.readouterr()
-    expect = "#FORMAT: BEACON\n\nxyz||123\n"
+    expect = "#FORMAT: BEACON\n\nxyz|☃|123\n"
     assert out == expect
 
 

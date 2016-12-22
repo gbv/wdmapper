@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """Manage Wikidata authority file mappings."""
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 import sys
 import os
 import io
-import difflib
+import codecs
 
 from .exceptions import WdmapperError, ArgumentError
 from .sparql import sparql_query
@@ -16,7 +16,7 @@ from .format import beacon, csv
 __version__ = '0.0.2'
 """Version number of module wdmapper."""
 
-commands = ['get', 'echo', 'check', 'diff', 'add', 'sync', 'property', 'help']
+commands = ['get', 'convert', 'check', 'diff', 'add', 'sync', 'property', 'help']
 """List if available commands."""
 
 
@@ -73,9 +73,9 @@ def command_get(args):
 def create_writer(args, metafields={}):
     header = not args.no_header
     if args.to == 'beacon':
-        return beacon.writer(sys.stdout, header=header, **metafields)
+        return beacon.writer(args.output, header=header, **metafields)
     else:
-        return csv.writer(sys.stdout, header=header)
+        return csv.writer(args.output, header=header)
 
 
 def command_diff(args):
@@ -144,7 +144,7 @@ def command_property(args):
         print(p)
 
 
-def command_echo(args):
+def command_convert(args):
 
     if args.properties:
         return
@@ -188,17 +188,23 @@ def wdmapper(args):
 
     check_args(args)
 
-    # open input file
+    PY3 = sys.version_info[0] == 3
+
+    # open input file or stream
     if (args.input and args.input != '-'):
         args.input = io.open(args.input, 'r', encoding='utf8')
-    else:
+    elif sys.stdin.isatty() or PY3:
         args.input = sys.stdin
+    else:
+        args.input = codecs.getreader('utf-8')(sys.stdin)
 
-    # open output file
+    # open output file or stream
     if (args.output and args.output != '-'):
         args.output = io.open(args.output, 'w', encoding='utf8')
-    else:
+    elif sys.stdout.isatty() or PY3:
         args.output = sys.stdout
+    else:
+        args.output = codecs.getwriter('utf-8')(sys.stdout)
 
     # look up given properties
     cache = not args.no_cache
@@ -211,8 +217,8 @@ def wdmapper(args):
     elif args.command == 'get':
         command_get(args)
 
-    elif args.command == 'echo':
-        command_echo(args)
+    elif args.command == 'convert':
+        command_convert(args)
 
     elif args.command == 'diff':
         command_diff(args)

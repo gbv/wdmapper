@@ -46,7 +46,7 @@ def parse_args(argv):
 
     args = parser.parse_args(argv)
 
-    if not argv or args.command == 'help':
+    if args.command == 'help':
         parser.print_help()
         sys.exit(1)
 
@@ -60,7 +60,7 @@ def parse_args(argv):
                 args.properties.insert(0, args.command)
                 args.command = 'property'
             else:
-                args.command = 'echo'
+                args.command = 'convert'
 
     return args
 
