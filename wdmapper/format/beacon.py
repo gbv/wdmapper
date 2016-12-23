@@ -19,6 +19,11 @@ meta_fields = ['name', 'description', 'prefix', 'target',
                'sourceset', 'targetset', 'institution',
                'relation', 'message', 'annotation']
 
+name = 'beacon'
+
+extension = '.txt'
+"""extension of BEACON files."""
+
 
 def writer(stream, **meta):
     """Return a new Writer instance."""

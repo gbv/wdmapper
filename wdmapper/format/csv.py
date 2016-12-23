@@ -11,6 +11,11 @@ from ..link import Link
 
 CSV_FIELDS = ['source', 'target', 'annotation']
 
+name = 'csv'
+
+extension = '.csv'
+"""extension of CSV files."""
+
 
 def reader(stream, header=True):
     """Read mappings in CSV format."""

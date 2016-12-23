@@ -20,10 +20,10 @@ def parse_args(argv):
 
     parser.add_argument('-V', '--version', action='store_true',
                         help='show version number of this script')
-    parser.add_argument('-f', '--from', dest='format', metavar='NAME',
+    parser.add_argument('-f', '--from', metavar='NAME',
                         help='input format (default: csv)')
     parser.add_argument('-t', '--to', metavar='NAME',
-                        help='output format (default: csv)')
+                        help='output format (default: beacon)')
     parser.add_argument('-H', '--no-header', dest='no_header', action='store_true',
                         help='read/write CSV/BEACON without header')
     parser.add_argument('-i', '--input', default='-', metavar='IN',
@@ -66,18 +66,28 @@ def parse_args(argv):
 
 
 def run(*args):
-    """Execute wdmapper from module with command line arguments."""
+    """Execute wdmapper from module with command line arguments.
+
+    Example:
+
+            wdmapper.run('convert', '-i', 'mappings.csv')
+    """
 
     try:
         args = parse_args(list(args))
-        wdmapper.wdmapper(args)
+        command = args.command
+        del args.command
+        wdmapper.wdmapper(command, **vars(args))
     except WdmapperError as e:
         print(e.message(), file=sys.stderr)
         sys.exit(1)
 
 
 def main():
-    """Run wdmapper from command line after installation."""
+    """Run wdmapper from command line.
+
+    Command line arguments are taken from ``sys.argv`` and decoded to Unicode.
+    """
 
     encoding = sys.stdout.encoding or 'utf-8'
     args = map(lambda arg: arg.decode(encoding), sys.argv[1:])

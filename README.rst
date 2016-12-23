@@ -15,6 +15,8 @@ wdmapper
 
 Wikidata authority file mapping tool
 
+See <https://wdmapper.readthedocs.io/> for full documentation.
+
 Description
 -----------
 
@@ -61,76 +63,6 @@ are required for CSV input format but not in BEACON input format.
 File ``user-config.py`` (required by pywikibot) is created
 automatically, if needed.
 
-Commands
-~~~~~~~~
-
-property
-^^^^^^^^
-
-Show information about given Wikidata properties. Examples:
-
-.. code:: shell
-
-    $ wdmapper P214
-    $ wdmapper "VIAF ID"
-    $ wdmapper https://viaf.org/viaf/
-
-get
-^^^
-
-Get mappings from Wikidata. Default output format is BEACON. Examples:
-
-.. code:: shell
-
-    $ wdmapper get P214 --limit 10
-    $ wdmapper get P214 P2428 --limit 10
-
-See `Wikidata BEACON
-generator <https://tools.wmflabs.org/wikidata-todo/beacon.php>`__ for an
-online tool to get the same data.
-
-convert
-^^^^^^^
-
-Read input mappings to check or translate between formats.
-
-*Not fully implemented yet.*
-
-check
-^^^^^
-
-Check whether all input mappings are also in Wikidata.
-
-*not implemented yet*
-
-diff
-^^^^
-
-Compare input mappings and mappings at Wikidata. This can be used for
-instance to regularly check whether mappings at Wikidata have been
-changed:
-
-.. code:: shell
-
-    $ wdmapper get P214 P2428 > mappings.csv
-    $ # ...wait until Wikidata could have been modified...
-    $ wdmapper diff P214 P2428 < mappings.csv
-
-add
-^^^
-
-Add input mappings to mappings at Wikidata unless already there.
-
-*not implemented yet*
-
-sync
-^^^^
-
-Align Wikidata mappings and input mappings by adding and removing
-mappings in Wikidata: missing mappings are created and additional
-mappings are removed.
-
-*not implemented yet*
 
 License
 -------
@@ -144,6 +76,7 @@ See also
 -  BEACON format specification
 -  `Wikidata BEACON
    generator <https://tools.wmflabs.org/wikidata-todo/beacon.php>`__
+-  https://www.wikidata.org/wiki/User:ZbwAddAuthorityBot
 -  pywikibot
 -  ...
 

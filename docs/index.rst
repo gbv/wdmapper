@@ -8,6 +8,9 @@ Contents:
 
    readme
    installation
+   cli
+   commands
+   configuration
    api
    contributing
    changelog

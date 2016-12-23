@@ -1,11 +1,11 @@
 History
 =======
 
-0.0.? (next release)
+0.0.3 (2016-12-23)
 --------------------
 -  Rename command echo to convert
 -  Use command convert by default
--  More Unicode encoding solutions
+-  Fix and extend input/output from stdin/stdout and files
 
 0.0.2 (2016-12-20)
 ------------------

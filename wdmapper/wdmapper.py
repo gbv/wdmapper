@@ -13,11 +13,24 @@ from .property import Property
 from .link import Link
 from .format import beacon, csv
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 """Version number of module wdmapper."""
 
 commands = ['get', 'convert', 'check', 'diff', 'add', 'sync', 'property', 'help']
 """List if available commands."""
+
+formats = {f.name: f for f in [csv, beacon]}
+"""Dict of input/output format names mapped to corresponding modules."""
+
+
+def readers():
+    return dict((f, formats[f]) for f in formats
+                if hasattr(formats[f],'reader'))
+
+
+def writers():
+    return dict((f, formats[f]) for f in formats
+                if hasattr(formats[f],'writer'))
 
 
 def setup_pywikibot():
@@ -72,10 +85,10 @@ def command_get(args):
 
 def create_writer(args, metafields={}):
     header = not args.no_header
-    if args.to == 'beacon':
-        return beacon.writer(args.output, header=header, **metafields)
-    else:
+    if args.to == 'csv':
         return csv.writer(args.output, header=header)
+    else:
+        return beacon.writer(args.output, header=header, **metafields)
 
 
 def command_diff(args):
@@ -159,39 +172,59 @@ def command_convert(args):
         writer.write_link(link)
 
 
-def check_args(args):
-    """Check and normalize wdmapper arguments."""
+def _check_args(command, args):
+    """Check and normalize wdmapper arguments.
 
-    formats = {'csv':csv, 'beacon':beacon}
+    Raises:
+       wdmapper.exceptions.ArgumentError
+    """
+
+    if command not in commands:
+        raise ArgumentError('command', allow=commands)
+
+    # 'from' is a reserved word so better rename the argument to 'format'
+    if hasattr(args, 'from'):
+        args.format = getattr(args, 'from')
+        delattr(args, 'from')
 
     if args.format:
         args.format = args.format.lower()
-        allow = [f for f in formats if hasattr(formats[f],'reader')]
+        allow = readers().keys()
         if args.format not in allow:
             raise ArgumentError('input format', allow=allow)
 
     if args.to:
         args.to = args.to.lower()
-        allow = [f for f in formats if hasattr(formats[f],'writer')]
+        allow = writers().keys()
         if args.to not in allow:
             raise ArgumentError('output format', allow=allow)
 
-    if args.command not in commands:
-        raise ArgumentError('command', allow=commands)
-
-    if args.command == 'diff':
+    if command == 'diff':
         args.sort = True
 
 
-def wdmapper(args):
-    """Execute wdmapper with arguments."""
+def wdmapper(command=None, **args):
+    """Execute wdmapper."""
 
-    check_args(args)
+    # convert arguments into an object for access via dot-notation
+    arguments = type(str('Arguments'), (object,), {})()
+    for name in args:
+        setattr(arguments, name, args[name])
+    args = arguments
+
+    _check_args(command, args)
 
     PY3 = sys.version_info[0] == 3
 
     # open input file or stream
     if (args.input and args.input != '-'):
+        if not args.format:
+            name, ext = os.path.splitext(args.input)
+            try:
+                args.format = [f for f in readers().values()
+                               if f.extension == ext][0].name
+            except IndexError:
+                pass
         args.input = io.open(args.input, 'r', encoding='utf8')
     elif sys.stdin.isatty() or PY3:
         args.input = sys.stdin
@@ -200,6 +233,13 @@ def wdmapper(args):
 
     # open output file or stream
     if (args.output and args.output != '-'):
+        if not args.to:
+            name, ext = os.path.splitext(args.output)
+            try:
+                args.to = [f for f in writers().values()
+                           if f.extension == ext][0].name
+            except IndexError:
+                pass
         args.output = io.open(args.output, 'w', encoding='utf8')
     elif sys.stdout.isatty() or PY3:
         args.output = sys.stdout
@@ -211,19 +251,19 @@ def wdmapper(args):
     args.properties = [Property.lookup(p, cache=cache) for p in args.properties]
 
     # execute command
-    if args.command == 'property':
+    if command == 'property':
         command_property(args)
 
-    elif args.command == 'get':
+    elif command == 'get':
         command_get(args)
 
-    elif args.command == 'convert':
+    elif command == 'convert':
         command_convert(args)
 
-    elif args.command == 'diff':
+    elif command == 'diff':
         command_diff(args)
 
     else:
-        if args.command in ['add','sync']:
+        if command in ['add','sync']:
             setup_pywikibot()
         raise WdmapperError("command %s is not implemented yet" % args.command)
