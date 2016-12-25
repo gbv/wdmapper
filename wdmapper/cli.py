@@ -18,8 +18,6 @@ def parse_args(argv):
         epilog="See <https://github.com/gbv/wdmapper#readme> for details."
     )
 
-    parser.add_argument('-V', '--version', action='store_true',
-                        help='show version number of this script')
     parser.add_argument('-f', '--from', metavar='NAME',
                         help='input format (default: csv)')
     parser.add_argument('-t', '--to', metavar='NAME',
@@ -32,12 +30,17 @@ def parse_args(argv):
                         help='output file to write to (default: - for STDOUT)')
     parser.add_argument('-s', '--sort', action='store_true',
                         help='sort mappings for normalized output')
-    parser.add_argument('-C', '--no-cache', dest='no_cache', action='store_true',
-                        help='disable caching')
     parser.add_argument('-l', '--limit', metavar='N', type=int, default=0,
                         help='maximum number of mappings to process')
-    parser.add_argument('-n', '--no-edit', dest='edit', action='store_false', default=True,
+    parser.add_argument('-C', '--no-cache', dest='cache',
+                        action='store_false', default=True,
+                        help='disable caching')
+    parser.add_argument('-n', '--dry-run', dest='dry', action='store_true',
                         help='don\'t perform any edits on Wikidata')
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='debug mode')
+    parser.add_argument('-V', '--version', action='store_true',
+                        help='show version number of this script')
 
     parser.add_argument('command', nargs='?',
                         help=' / '.join(wdmapper.commands))
@@ -58,7 +61,7 @@ def parse_args(argv):
         if len(args.properties) < 2:
             if args.command:
                 args.properties.insert(0, args.command)
-                args.command = 'property'
+                args.command = 'head'
             else:
                 args.command = 'convert'
 

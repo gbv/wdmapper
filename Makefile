@@ -3,7 +3,7 @@
 test:
 	python setup.py test
 
-build:
+build: docs
 	python setup.py bdist_wheel --universal
 
 release: clean build
@@ -21,3 +21,7 @@ docs:
 		perl -pi -e 's/(module|package)$$// if $$. == 1' $$f ;\
 	done
 	$(MAKE) -C docs html
+
+requirements:
+	pip install -r requirements.txt
+	pip install -r dev-requirements.txt

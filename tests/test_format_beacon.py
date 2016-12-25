@@ -8,9 +8,8 @@ from wdmapper.format import beacon
 from wdmapper.link import Link
 
 
-def test_write():
+def test_write_no_header():
     out = io.StringIO('')
-    writer = beacon.writer(out)
-    metalines = out.getvalue()
+    writer = beacon.writer(out, header=False)
     writer.write_link(Link('foo', 'b"r'))
-    assert out.getvalue() == metalines + 'foo||b"r\n'
+    assert out.getvalue() == 'foo||b"r\n'

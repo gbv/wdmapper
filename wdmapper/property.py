@@ -1,16 +1,25 @@
 # -*- coding: utf-8 -*-
-"""Get and express information about a Wikidata property."""
+"""Get and express information about Wikidata properties."""
 
 from __future__ import unicode_literals
-import json
 import re
 
 from .exceptions import WdmapperError
-from .sparql import sparql_query
 
 
 class Property(object):
-    """Representation of a Wikidata property"""
+    """Information about a Wikidata property for authority file mapping.
+
+    Attributes:
+        uri (str): Full URI such as ``http://www.wikidata.org/entity/P227``
+        id (str): Wikidata Property identifier such as ``P227``
+        label (str): English primary label of the property
+        template (str): URL template to link via identifiers of this property
+        pattern (str): regular expression of identifier of this property
+
+    Attributes can also be read as dictionary keys (e.g. ``p['uri'] == p.uri``)
+    to facilitate access in formatting strings.
+    """
 
     id_pattern = re.compile(r"""
         ^
@@ -27,22 +36,28 @@ class Property(object):
         if (self.uri):
             self.id = Property.match(self.uri)
         self.label = data.get('label')
-        self.regex = data.get('regex')
+        self.type = data.get('type')
         self.pattern = data.get('pattern')
-        if (self.pattern):
-            pattern = self.pattern.replace('$1','{ID}')
-            self.beacon_pattern = re.sub(r'{ID}$','', pattern)
+        self.template = data.get('template')
+        # type could also be: string, commons-media, globe-coordinate
+        if self.type != 'http://wikiba.se/ontology#ExternalId':
+            error = 'property {id} is not of type external-id!'
+        elif not self.template:
+            error = 'property {id} lacks URL template (P1630)'
+        else:
+            return
+        raise WdmapperError(error.format(id=self.id))
 
     def __getitem__(self, key):
         return getattr(self, key)
 
     def __repr__(self):
-        s = "{label} ({id})\n<{uri}>\n".format(**self.__dict__)
+        s = "{label} ({id})\n<{uri}>\n{type}\n".format(**self.__dict__)
+        if self.template:
+            s += self.template
+        s += "\n"
         if self.pattern:
             s += self.pattern
-        s += "\n"
-        if self.regex:
-            s += self.regex
         return s
 
     @staticmethod
@@ -50,44 +65,3 @@ class Property(object):
         m = Property.id_pattern.match(s)
         if m:
             return 'P' + m.group('id')
-
-    @classmethod
-    def lookup(cls, s, cache=True):
-        """check and normalize property value such as 'P32'"""
-
-        pid = Property.match(s)
-        if pid:
-            # get by property id
-            uri = 'http://www.wikidata.org/entity/' + pid
-            where = 'BIND(<' + uri + '> AS ?p)'
-        elif Property.ns_pattern.match(s):
-            # get by formatting URL (P1630)
-            formatter_url = json.dumps(s)   # quote and escape literal
-            if formatter_url.find('$1') == -1:
-                formatter_url += '$1'
-            where = '?p wdt:P1630 %s' % formatter_url
-        else:
-            # get by label
-            label = json.dumps(s)           # quote and escape literal
-            where = '?p rdfs:label ?l . FILTER (str(?l) = %s)' % label
-
-        query = """\
-                SELECT ?p ?label ?pattern ?regex WHERE {{
-                    {0} .
-                    ?p a wikibase:Property .
-                    OPTIONAL {{ ?p wdt:P1630 ?pattern }}
-                    OPTIONAL {{ ?p wdt:P1793 ?regex }}
-                    SERVICE wikibase:label {{
-                        bd:serviceParam wikibase:language "{1}" .
-                        ?p rdfs:label ?label .
-                    }}
-                }}""".format(where, 'en')
-
-        res = sparql_query(query, cache=cache)
-
-        if not res:
-            raise WdmapperError("property not found: " + s)
-        if len(res) > 1:
-            raise WdmapperError("multiple properties: " + s)
-
-        return cls(res[0])

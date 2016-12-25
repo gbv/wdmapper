@@ -15,63 +15,49 @@ wdmapper
 
 Wikidata authority file mapping tool
 
-See <https://wdmapper.readthedocs.io/> for full documentation.
+See https://wdmapper.readthedocs.io/ or source folder ``docs`` for full
+documentation.
 
 Description
------------
+~~~~~~~~~~~
 
-This tool is a command line application to manage mappings between
-authority files in Wikidata. The current draft of wdmapper is limited to
-simple 1-to-1 mapping that only exist for concepts obvious unique
-identity such as people.
-
-Requirements
-------------
-
-Python 2.7 or higher
-
+**wdmapper** is a command line application and Python library to manage
+mappings between authority files in Wikidata. The current draft is limited to
+simple 1-to-1 mapping that only exist for concepts obvious unique identity such
+as people.
 
 Installation
-------------
+~~~~~~~~~~~~
 
 .. code:: shell
 
     $ pip install wdmapper
 
 Usage
------
+~~~~~
 
 Run ``wdmapper help``, ``wdmapper -h`` or ``wdmapper --help`` for basic help.
 The general calling syntax is
 
 .. code:: shell
 
-    wdmapper [command] [source] [target]
+    wdmapper [OPTIONS] COMMAND [SOURCE] TARGET
 
-with ``property`` as default command. Source and target are Wikidata
-property given by any of
+where ``COMMAND`` is one of the wdmapper commands and ``SOURCE`` and ``TARGET``
+are Wikidata properties. 
 
--  property id (e.g. "P214")
--  property URI/URL (e.g. "http://www.wikidata.org/entity/P214" or
-   "https://www.wikidata.org/wiki/Property:P214")
--  exact English property label (e.g. "VIAF ID")
-
-Depending on command the script reads input mappings from a file or
-standard input, and mappings from Wikidata. Arguments source and target
-are required for CSV input format but not in BEACON input format.
-
-File ``user-config.py`` (required by pywikibot) is created
-automatically, if needed.
-
+Depending on the command the script reads input mappings from a file or
+standard input, and mappings from Wikidata. Arguments SOURCE and TARGET are
+required for CSV input format but not for BEACON input format.
 
 License
--------
+~~~~~~~
 
 The source code is available at https://github.com/gbv/wdmapper and
 licensed under the terms of the MIT license.
 
 See also
---------
+~~~~~~~~
 
 -  BEACON format specification
 -  `Wikidata BEACON

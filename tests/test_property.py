@@ -16,10 +16,12 @@ def test_property(capsys):
     run('P214')
     out, err = capsys.readouterr()
     assert out.startswith("""\
-VIAF ID (P214)
-<http://www.wikidata.org/entity/P214>
-https://viaf.org/viaf/$1
-[1-9]""")
+#FORMAT: BEACON
+#NAME: VIAF ID
+#DESCRIPTION: Mapping from Wikidata IDs to VIAF IDs
+#PREFIX: http://www.wikidata.org/entity/
+#TARGET: https://viaf.org/viaf/
+""")
 
 
 def test_property_not_found(capsys):

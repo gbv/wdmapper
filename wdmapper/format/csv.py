@@ -8,6 +8,7 @@ import json
 import sys
 
 from ..link import Link
+from ..exceptions import WdmapperError
 
 CSV_FIELDS = ['source', 'target', 'annotation']
 
@@ -85,12 +86,23 @@ class Writer:
             s = json.dumps(s).replace('\\"','""')
         return s
 
-    def __init__(self, stream, header):
+    def __init__(self, stream, header=True):
         self.stream = stream
-        if (header):
+        self.header = header
+        self.initialized = header is False
+
+    def init(self, meta):
+        if self.initialized:
+            return
+        self.initialized = True
+        if self.header:
             self.write_link(Link('source', 'target', 'annotation'))
 
     def write_link(self, link):
+        if not self.initialized:
+            raise WdmapperError(str(self.__class__) +
+                                " instance not initialized!")
+
         row = []
         for key in CSV_FIELDS:
             row.append(self.escape(getattr(link,key)))
@@ -99,3 +111,8 @@ class Writer:
             row.pop()
 
         print(self.separator.join(row), file=self.stream)
+
+    def write_delta(self, delta):  # TODO: move duplicated code to base class
+        for op, link in delta:
+            self.stream.write(op + ' ')
+            self.write_link(link)

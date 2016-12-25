@@ -26,3 +26,8 @@ Examples
     $ wdmapper convert -i mappings.csv -o mappings.txt
     $ wdmapper convert < mappings.csv -t beacon > mappings.txt
 
+Additional options and arguments
+--------------------------------
+
+``limit``, ``sort``, ``debug``, ``cache``, ``header``, ``dry``
+

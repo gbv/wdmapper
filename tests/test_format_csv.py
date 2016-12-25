@@ -20,6 +20,7 @@ def test_read():
 def test_write():
     out = io.StringIO("")
     writer = csv.writer(out, header=True)
+    writer.init({})
     assert out.getvalue() == "source, target, annotation\n"
 
     writer.write_link(Link('foo','b"r'))

@@ -1,24 +1,26 @@
-Welcome to wdmapper's documentation!
-====================================
+wdmapper documentation
+======================
 
-Contents:
+See also https://github.com/gbv/wdmapper#readme for source code and a short summary.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   readme
    installation
+   usage
+   mappings
+   properties
    cli
    commands
    configuration
-   api
    contributing
    changelog
 
 
-Indices and tables
-==================
+Source code and API
+~~~~~~~~~~~~~~~~~~~
 
+* :doc:`api`
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
+

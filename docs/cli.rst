@@ -1,9 +1,18 @@
-Command Line Interface
-~~~~~~~~~~~~~~~~~~~~~~
+Command Line Client
+===================
 
-wdmapper comes with a command line client of same name. To get a short help
-call it with :doc:`command <commands>` ``help`` or with :doc:`option
-<configuration>` ``-h`` or ``--help``:
+wdmapper comes with a command line client of same name.  The general calling
+syntax is
+
+.. code:: shell
+
+    $ wdmapper [OPTIONS] COMMAND TARGET          # for direct links
+    $ wdmapper [OPTIONS] COMMAND SOURCE TARGET   # for indirect links
+
+where ``COMMAND`` is one of the wdmapper :doc:`commands <commands>`, and
+``SOURCE`` and ``TARGET`` are Wikidata :doc:`properties <properties>`. Options
+can be used for :doc:`configuration <configuration>`.  A list of commands and
+options is shown with command ``help`` and with option ``-h`` or ``--help``:
 
 .. code:: shell
 

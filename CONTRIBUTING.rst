@@ -6,14 +6,8 @@ Feedback and contributions are very welcome!
 This is my first Python project so I try to follow best-practice I could find.
 Please let me know if I either missed something or if I was to pedandic!
 
-Issue tracker
--------------
-
-Please report bugs and feature requests at
-https://github.com/gbv/wdmapper/issues!
-
-Testing
--------
+Running from source
+-------------------
 
 You can manually execute wdmapper from source tree for testing:
 
@@ -21,12 +15,27 @@ You can manually execute wdmapper from source tree for testing:
 
     $ ./wdmapper.py
 
-Please test functionality with unit tests, located in tests/! Run all
-tests with any of:
+Issue tracker
+-------------
+
+Please report bugs and feature requests at
+https://github.com/gbv/wdmapper/issues!
+
+Development requirements
+------------------------
+
+Additional requirements for development are listed in ``dev-requirements.txt``.
+Install via ``pip -r dev-requirements.txt``.
+
+Testing
+-------
+
+Please test functionality with unit tests, located in directory ``tests``.
 
 .. code:: shell
 
-    $ python setup.py test $ pytest
+    $ python setup.py test 
+    $ pytest
 
 Run a single test file:
 

@@ -6,17 +6,16 @@ import sys
 import os
 import io
 import codecs
+import itertools
 
 from .exceptions import WdmapperError, ArgumentError
-from .sparql import sparql_query
-from .property import Property
-from .link import Link
 from .format import beacon, csv
+from . import wikidata
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 """Version number of module wdmapper."""
 
-commands = ['get', 'convert', 'check', 'diff', 'add', 'sync', 'property', 'help']
+commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync', 'help']
 """List if available commands."""
 
 formats = {f.name: f for f in [csv, beacon]}
@@ -33,143 +32,69 @@ def writers():
                 if hasattr(formats[f],'writer'))
 
 
-def setup_pywikibot():
-    """initialize pywikibot connected to wikidata"""
-    global pywikibot
-    global site
-    global repo
-    try:
-        import pywikibot
-    except RuntimeError as e:
-        # create user-config.py if needed
-        if os.path.exists('user-config.py'):
-            raise
-        # print('user-config.py created')
-        file = open('user-config.py', 'w')
-        file.write("\n".join([
-            "mylang = 'wikidata'",
-            "family = 'wikidata'",
-            "# usernames['wikidata']['wikidata'] = u'YOUR-USERNAME'",
-            "console_encoding = 'utf-8'", ""
-        ]))
-        file.close()
-        import pywikibot
-        site = pywikibot.Site()
-        repo = site.data_repository()
+def _get_links(args):
+    """Get links from Wikidata.
+
+    Returns:
+        (dict, iter): Mapping metadata and link iterator
+    """
+
+    return _get_links_header(args), wikidata.get_links(**args.__dict__)
 
 
-def command_get(args):
+def _get_links_header(args):
 
-    metafields = {
+    # build meta fields
+    meta = {
         'name': '{target[label]}',
         'description': 'Mapping from {source[label]}s to {target[label]}s',
-        'prefix': '{source[beacon_pattern]}',
-        'target': '{target[beacon_pattern]}'
+        'prefix': '{source[template]}',
+        'target': '{target[template]}'
     }
 
-    props = {'source': args.properties[0]}
     if len(args.properties) > 1:
-        props['target'] = args.properties[1]
-
-    for f in metafields:
-        try:
-            metafields[f] = metafields[f].format(**props)
-        except KeyError:
-            metafields[f] = None
-
-    writer = create_writer(args, metafields)
-
-    for link in get_links_from_wikidata(args):
-        writer.write_link(link)
-
-
-def create_writer(args, metafields={}):
-    header = not args.no_header
-    if args.to == 'csv':
-        return csv.writer(args.output, header=header)
+        props = {'source': args.properties[0], 'target': args.properties[1]}
     else:
-        return beacon.writer(args.output, header=header, **metafields)
+        props = {'source': {'template': 'http://www.wikidata.org/entity/',
+                            'label': 'Wikidata ID'},
+                 'target': args.properties[0]}
+
+    for f in meta:
+        try:
+            meta[f] = meta[f].format(**props)
+        except KeyError:
+            meta[f] = None
+
+    return meta
 
 
-def command_diff(args):
-    input_links = csv.reader(args.input, header=not args.no_header)
-    wikidata_links = get_links_from_wikidata(args)
+def _get_reader(args):
+    reader = csv.reader(args.input, header=not args.no_header)
+    # TODO: args.properties => meta.source/meta.target
+    if args.limit:
+        reader = itertools.islice(reader, args.limit)
+    return {}, reader
+
+
+def _get_diff(args):
+    in_meta, in_links = _get_reader(args)
+    wd_meta, wd_links = _get_links(args)
+    # TODO: in_meta must be empty or same as wd_meta!
 
     # we could use difflib but set operations work as well and look better
-    a = set(list(wikidata_links))
-    b = set(list(input_links))
+    a = set(list(wd_links))
+    b = set(list(in_links))
 
     delta = [('-', l) for l in a - b] + [('+', l) for l in b - a]
     delta = sorted(delta, key=lambda l: l[1])
 
-    args.no_header = True  # TODO: keep header?
-    writer = create_writer(args, {})
-
-    for op, link in delta:
-        args.output.write(op + ' ')
-        writer.write_link(link)
+    return wd_meta, [delta]
 
 
-def get_links_from_wikidata(args):
-    properties = args.properties
-
-    if len(properties) == 1:
-        sparql = """\
-SELECT ?item ?target WHERE {{
-    ?item wdt:{target[id]} ?target .
-}}"""
-        wd = Property({
-                      'label':'Wikidata ID',
-                      'pattern':'http://www.wikidata.org/entity/'
-                      })
-        fields = {'source':wd, 'target':properties[0]}
-    else:
-        sparql = """\
-SELECT ?item ?source ?target WHERE {{
-    ?item wdt:{source[id]} ?source .
-    ?item wdt:{target[id]} ?target .
-}}"""
-        fields = {'source':properties[0], 'target':properties[1]}
-
-    query = sparql.format(**fields)
-    if (args.limit):
-        query += ' LIMIT {:d}'.format(args.limit)
-    if (args.sort):
-        query += '\nORDER BY ?source ?target'
-
-    cache = not args.no_cache
-    res = sparql_query(query, cache=cache)
-
-    for m in res:
-        qid = m['item'].split('/')[-1]
-        if len(properties) == 1:
-            yield Link(qid, m['target'])
-        else:
-            yield Link(m['source'], m['target'], qid)
-
-# TODO: lookup item with source_property = mapping.source in Wikidata
-# TODO: check for existence of statement with target_property
-# TODO: add statement with target_property = args.target unless it exists
-
-
-def command_property(args):
-    for p in args.properties:
-        print(p)
-
-
-def command_convert(args):
-
-    if args.properties:
-        return
-
-    header = not args.no_header
-    reader = csv.reader(args.input, header=header)
-
-    # TODO: add metafields if read
-    writer = create_writer(args, {})
-
-    for link in reader:
-        writer.write_link(link)
+def _check_mappings(args):
+    in_meta, in_links = _get_reader(args)
+    # TODO: set meta from args.properties!
+    return in_meta, wikidata.get_deltas(in_links, **args.__dict__)
 
 
 def _check_args(command, args):
@@ -201,6 +126,9 @@ def _check_args(command, args):
 
     if command == 'diff':
         args.sort = True
+
+    if not hasattr(args, 'writer'):
+        args.writer = None
 
 
 def wdmapper(command=None, **args):
@@ -247,23 +175,43 @@ def wdmapper(command=None, **args):
         args.output = codecs.getwriter('utf-8')(sys.stdout)
 
     # look up given properties
-    cache = not args.no_cache
-    args.properties = [Property.lookup(p, cache=cache) for p in args.properties]
+    args.properties = [wikidata.get_property(p, cache=args.cache, debug=args.debug)
+                       for p in args.properties]
+    for p in args.properties:
+        if args.debug:
+            print(repr(p), file=sys.stderr)
 
-    # execute command
-    if command == 'property':
-        command_property(args)
-
-    elif command == 'get':
-        command_get(args)
-
-    elif command == 'convert':
-        command_convert(args)
-
+    # execute selected command
+    if command == 'get':
+        meta, links = _get_links(args)
+    elif command == 'head':
+        meta = _get_links_header(args)
+        links = []
+    elif command == 'check':
+        meta, deltas = _check_mappings(args)
     elif command == 'diff':
-        command_diff(args)
+        meta, deltas = _get_diff(args)
+    elif command == 'convert':
+        meta, links = _get_reader(args)
 
+    # initialize writer
+    if not args.writer:
+        header = (command == 'about' or not args.no_header)
+        if args.to == 'csv':
+            args.writer = csv.writer(args.output, header=header)
+        else:
+            args.writer = beacon.writer(args.output, header=header)
+
+    # emit output
+    if command in ['get', 'head', 'convert']:
+        args.writer.init(meta)
+        for link in links:
+            args.writer.write_link(link)
+    elif command in ['diff', 'check']:
+        args.writer.init(meta)
+        for delta in deltas:
+            args.writer.write_delta(delta)
     else:
         if command in ['add','sync']:
-            setup_pywikibot()
-        raise WdmapperError("command %s is not implemented yet" % args.command)
+            wikidata.setup_pywikibot()
+        raise WdmapperError("command %s is not implemented yet" % command)

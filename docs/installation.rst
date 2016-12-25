@@ -1,17 +1,13 @@
 Installation
 ============
 
-At releases of wdmapper at the command line:
+wdmapper requires Python 2.7 or higher. Releases can be installed from the
+command line with `pip <https://pip.pypa.io/>`__:
 
 .. code:: shell
 
-    $ pip install wdmapper
-
-Or, to install at ``~/.local``:
-
-.. code:: shell
-
-    $ pip install wdmapper --user
+    $ pip install wdmapper              # either install global
+    $ pip install wdmapper --user       # or install to ~/.local
 
 The latest developer version can be retrieved from the git repository:
 
