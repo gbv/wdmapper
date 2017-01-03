@@ -50,27 +50,32 @@ def get_property(p, cache=True, debug=False):
     if len(res) > 1:
         raise WdmapperError('multiple properties: %s' % p)
 
-    return Property(res[0])
+    prop = Property(res[0])
+    if debug:
+        debug(repr(prop))
+    return prop
 
 
-def get_links(properties, sort=False, limit=0, cache=True, debug=False, **args):
+def get_links(source, target, sort=False, limit=0, cache=True, debug=False, **args):
     """Get an iterator of links with given properties."""
 
-    if len(properties) == 1:
+    if source is None:
         query = """\
 SELECT ?item ?target ?annotation WHERE {{
     ?item wdt:{target[id]} ?target .
     OPTIONAL {{ ?item rdfs:label ?annotation.
                FILTER(LANG(?annotation) = "en") }}
-}}""".format(target=properties[0])
+}}"""
         fields = '?target'
     else:
         query = """\
 SELECT ?item ?source ?target WHERE {{
     ?item wdt:{source[id]} ?source .
     ?item wdt:{target[id]} ?target .
-}}""".format(source=properties[0], target=properties[1])
+}}"""
         fields = '?source ?target'
+
+    query = query.format(source=source, target=target)
 
     if (sort):
         query += '\nORDER BY ' + fields
@@ -83,44 +88,38 @@ SELECT ?item ?source ?target WHERE {{
         yield _link_from_wdsparql_row(row)
 
 
-def get_deltas(links, properties, language='en', cache=True, debug=False, **args):
+def get_deltas(source, target, links, language='en', cache=True, debug=False, **args):
     """Check a list of links against Wikipedia and return deltas.
 
     A delta is a list of changes, each a tuple of operator (character) and link.
     In contrast to diffs, the same change may be emitted multiple times.
     """
 
-    if len(properties) == 1:
+    if source is None:
         sparql = """SELECT DISTINCT ?item ?target ?annotation WHERE {{
           {{
              BIND ("{target}" as ?target)
-             {{ ?item wdt:{ptarget} ?target }} UNION
+             {{ ?item wdt:{p_target} ?target }} UNION
              {{ BIND(<http://www.wikidata.org/entity/{source}> as ?item ) .
-                ?item wdt:{ptarget} ?target }}
+                ?item wdt:{p_target} ?target }}
             OPTIONAL {{ ?item rdfs:label ?annotation.
                        FILTER(LANG(?annotation) = "{language}") }}
           }}
         }}"""
     else:
         sparql = """SELECT DISTINCT ?source ?item ?target WHERE {{
-          {{ {{ ?item wdt:{psource} "{source}" }} UNION
-             {{ ?item wdt:{tsource} "{target}" }} }}
-          OPTIONAL {{ ?item wdt:{psource} ?source }}
-          OPTIONAL {{ ?item wdt:{tsource} ?target }}
+          {{ {{ ?item wdt:{p_source} "{source}" }} UNION
+             {{ ?item wdt:{p_target} "{target}" }} }}
+          OPTIONAL {{ ?item wdt:{p_source} ?source }}
+          OPTIONAL {{ ?item wdt:{p_target} ?target }}
         }}"""
 
     for link in links:
-        if len(properties) == 1:
-            query = sparql.format(source=link.source,
-                                  target=link.target,
-                                  ptarget=properties[0].id,
-                                  language=language)
-        else:
-            query = sparql.format(source=link.source,
-                                  psource=properties[0].id,
-                                  target=link.target,
-                                  tsource=properties[1].id,
-                                  language=language)
+        query = sparql.format(source=link.source,
+                              target=link.target,
+                              p_source=source.id if source else None,
+                              p_target=target.id,
+                              language=language)
         res = sparql_query(query, cache=cache, debug=debug)
         wd_links = [_link_from_wdsparql_row(row) for row in res]
 
@@ -150,7 +149,11 @@ def _link_from_wdsparql_row(row):
 
 
 def setup_pywikibot():
-    """initialize pywikibot connected to wikidata"""
+    """initialize pywikibot connected to wikidata
+
+    File ``user-config.py`` (required by pywikibot) is created
+    automatically, if needed.
+    """
 
     global pywikibot
     global site

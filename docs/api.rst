@@ -1,5 +1,5 @@
-API Reference
-=============
+Python library
+==============
 
 The Python API is in a very preliminary state so better not build on it yet!
 
@@ -7,4 +7,11 @@ The Python API is in a very preliminary state so better not build on it yet!
    :glob:
 
    api/*
+
+
+Index
+~~~~~
+
+* :ref:`genindex`
+* :ref:`search`
 

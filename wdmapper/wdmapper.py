@@ -52,12 +52,12 @@ def _get_links_header(args):
         'target': '{target[template]}'
     }
 
-    if len(args.properties) > 1:
-        props = {'source': args.properties[0], 'target': args.properties[1]}
+    if args.source:
+        props = {'source': args.source, 'target': args.target}
     else:
         props = {'source': {'template': 'http://www.wikidata.org/entity/',
                             'label': 'Wikidata ID'},
-                 'target': args.properties[0]}
+                 'target': args.target}
 
     for f in meta:
         try:
@@ -70,7 +70,7 @@ def _get_links_header(args):
 
 def _get_reader(args):
     reader = csv.reader(args.input, header=not args.no_header)
-    # TODO: args.properties => meta.source/meta.target
+    # TODO: args.source / args.target => meta.source / meta.target
     if args.limit:
         reader = itertools.islice(reader, args.limit)
     return {}, reader
@@ -93,8 +93,8 @@ def _get_diff(args):
 
 def _check_mappings(args):
     in_meta, in_links = _get_reader(args)
-    # TODO: set meta from args.properties!
-    return in_meta, wikidata.get_deltas(in_links, **args.__dict__)
+    # TODO: set meta from args.source / args.target
+    return in_meta, wikidata.get_deltas(links=in_links, **args.__dict__)
 
 
 def _check_args(command, args):
@@ -129,6 +129,9 @@ def _check_args(command, args):
 
     if not hasattr(args, 'writer'):
         args.writer = None
+
+    if args.debug and not callable(args.debug):
+        args.debug = lambda s: print(s, '\n', file=sys.stderr)
 
 
 def wdmapper(command=None, **args):
@@ -174,12 +177,12 @@ def wdmapper(command=None, **args):
     else:
         args.output = codecs.getwriter('utf-8')(sys.stdout)
 
-    # look up given properties
-    args.properties = [wikidata.get_property(p, cache=args.cache, debug=args.debug)
-                       for p in args.properties]
-    for p in args.properties:
-        if args.debug:
-            print(repr(p), file=sys.stderr)
+    # look up properties
+    for which in ['source', 'target']:
+        prop = getattr(args, which)
+        if prop is not None:
+            prop = wikidata.get_property(prop, cache=args.cache, debug=args.debug)
+            setattr(args, which, prop)
 
     # execute selected command
     if command == 'get':

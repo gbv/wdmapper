@@ -1,5 +1,5 @@
-Command Line Client
-===================
+Command Line
+============
 
 wdmapper comes with a command line client of same name.  The general calling
 syntax is

@@ -1,7 +1,8 @@
 wdmapper documentation
 ======================
 
-See also https://github.com/gbv/wdmapper#readme for source code and a short summary.
+**wdmapper** is a tool to manage mappings between authority files in Wikidata.
+See https://github.com/gbv/wdmapper#readme for source code and a short summary.
 
 .. toctree::
    :maxdepth: 1
@@ -13,14 +14,9 @@ See also https://github.com/gbv/wdmapper#readme for source code and a short summ
    cli
    commands
    configuration
+   api
    contributing
    changelog
 
 
-Source code and API
-~~~~~~~~~~~~~~~~~~~
-
-* :doc:`api`
-* :ref:`genindex`
-* :ref:`search`
 

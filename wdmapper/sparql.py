@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """SPARQL Query interface to Wikidata."""
 
-from __future__ import unicode_literals, print_function
+from __future__ import unicode_literals
 import json
 import sys
+import textwrap
 
 PY3 = sys.version_info[0] > 2
 
@@ -17,8 +18,9 @@ WIKIDATA = 'http://query.wikidata.org/sparql'
 
 
 def sparql_query(query, endpoint=WIKIDATA, cache=True, debug=False):
+    query = textwrap.dedent(query)
     if debug:
-        print(query, file=sys.stderr)
+        debug(query)
 
     url = '%s?query=%s' % (endpoint, quote(query))
     req = Request(url)

@@ -43,43 +43,48 @@ def parse_args(argv):
                         help='show version number of this script')
 
     parser.add_argument('command', nargs='?',
-                        help=' / '.join(wdmapper.commands))
-    parser.add_argument('properties', nargs='*', metavar='property',
-                        help='source / target property given by id, URL, URI, or label')
+                        help=', '.join(wdmapper.commands))
+    parser.add_argument('source', nargs='?',
+                        help='source property given by id, URL, URI, or label')
+    parser.add_argument('target', nargs='?',
+                        help='target property given by id, URL, URI, or label')
 
     args = parser.parse_args(argv)
 
     if args.command == 'help':
         parser.print_help()
-        sys.exit(1)
-
-    if args.version:
-        print("wdmapper %s" % wdmapper.__version__)
         sys.exit(0)
 
-    if args.command not in wdmapper.commands:
-        if len(args.properties) < 2:
-            if args.command:
-                args.properties.insert(0, args.command)
-                args.command = 'head'
-            else:
-                args.command = 'convert'
+    if args.version:
+        print('wdmapper %s' % wdmapper.__version__)
+        sys.exit(0)
 
-    return args
+    command = args.command
+    del args.command
+
+    if args.target is None:
+        if command is not None and command not in wdmapper.commands:
+            if args.source is None:
+                args.target = command
+            else:
+                args.target = args.source
+                args.source = command
+            command = 'head'
+        else:
+            args.target = args.source
+            args.source = None
+
+    if command is None:
+        command = 'convert'
+
+    return command, args
 
 
 def run(*args):
-    """Execute wdmapper from module with command line arguments.
-
-    Example:
-
-            wdmapper.run('convert', '-i', 'mappings.csv')
-    """
+    """Execute wdmapper from module with list of command line arguments."""
 
     try:
-        args = parse_args(list(args))
-        command = args.command
-        del args.command
+        command, args = parse_args(list(args))
         wdmapper.wdmapper(command, **vars(args))
     except WdmapperError as e:
         print(e.message(), file=sys.stderr)
