@@ -63,11 +63,6 @@ def utf_8_encoder(unicode_csv_data):
         yield line.encode('utf-8')
 
 
-def writer(stream, header=True):
-    """Return a new CSV Writer instance."""
-    return Writer(stream, header)
-
-
 class Writer:
     """
     Writes Links in CSV format.

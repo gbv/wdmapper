@@ -27,11 +27,6 @@ extension = '.txt'
 """extension of BEACON files."""
 
 
-def writer(stream, **meta):
-    """Return a new Writer instance."""
-    return Writer(stream, **meta)
-
-
 class Writer:
 
     def __init__(self, stream, header=True):

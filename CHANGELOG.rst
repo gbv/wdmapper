@@ -1,9 +1,13 @@
 History
 =======
 
+next
+----
+-  Add option 'relation'
+-  Add ntriples output format
+
 0.0.4 (2017-01-03)
 ------------------
-
 -  Implement command 'check'
 -  Rename command 'about' to 'head'
 -  Include item label for one-way mappings from Wikidata

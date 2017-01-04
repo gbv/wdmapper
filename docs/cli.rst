@@ -10,9 +10,9 @@ syntax is
     $ wdmapper [OPTIONS] COMMAND SOURCE TARGET   # for indirect links
 
 where ``COMMAND`` is one of the wdmapper :doc:`commands <commands>`, and
-``SOURCE`` and ``TARGET`` are Wikidata :doc:`properties <properties>`. Options
-can be used for :doc:`configuration <configuration>`.  A list of commands and
-options is shown with command ``help`` and with option ``-h`` or ``--help``:
+``SOURCE`` and ``TARGET`` are Wikidata :doc:`properties <properties>`.  A list
+of commands and :doc:`options <options>` is shown with command ``help`` and
+with option ``-h`` or ``--help``:
 
 .. code:: shell
 

@@ -22,8 +22,6 @@ def parse_args(argv):
                         help='input format (default: csv)')
     parser.add_argument('-t', '--to', metavar='NAME',
                         help='output format (default: beacon)')
-    parser.add_argument('-H', '--no-header', dest='no_header', action='store_true',
-                        help='read/write CSV/BEACON without header')
     parser.add_argument('-i', '--input', default='-', metavar='IN',
                         help='input file to read from (default: - for STDIN)')
     parser.add_argument('-o', '--output', default='-', metavar='OUT',
@@ -32,9 +30,13 @@ def parse_args(argv):
                         help='sort mappings for normalized output')
     parser.add_argument('-l', '--limit', metavar='N', type=int, default=0,
                         help='maximum number of mappings to process')
+    parser.add_argument('-H', '--no-header', dest='no_header', action='store_true',
+                        help='read/write CSV/BEACON without header')
     parser.add_argument('-C', '--no-cache', dest='cache',
                         action='store_false', default=True,
                         help='disable caching')
+    parser.add_argument('-r', '--relation', metavar='R',
+                        help='mapping relation URI such as skos:exactMatch or owl:sameAs')
     parser.add_argument('-n', '--dry-run', dest='dry', action='store_true',
                         help='don\'t perform any edits on Wikidata')
     parser.add_argument('-d', '--debug', action='store_true',

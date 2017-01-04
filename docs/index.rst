@@ -13,7 +13,7 @@ See https://github.com/gbv/wdmapper#readme for source code and a short summary.
    properties
    cli
    commands
-   configuration
+   options
    api
    contributing
    changelog

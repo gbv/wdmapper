@@ -1,5 +1,5 @@
-Configuration
-=============
+Options
+=======
 
 wdmapper can be controlled by several parameters. Run the command line client
 with option ``--help`` to get a full list of command line arguments.
@@ -18,6 +18,10 @@ can be used to select **input or output format**. Default input format is
 been specified, it is guessed from input/output filename extension, for
 instance ``.csv`` for CSV format and ``.txt`` for BEACON format.
 
+Supported input formats are: csv
+
+Supported output formats are: csv, beacon, nt
+
 Examples
 ^^^^^^^^
 
@@ -29,5 +33,5 @@ Examples
 Additional options and arguments
 --------------------------------
 
-``limit``, ``sort``, ``debug``, ``cache``, ``header``, ``dry``
+``limit``, ``sort``, ``debug``, ``cache``, ``header``, ``dry``, ``relation``
 

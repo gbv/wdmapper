@@ -12,5 +12,11 @@ referred to as **Links**. Two kinds of links are supported:
   target :doc:`property <properties>`, The link is possible through a common
   Wikidata item that uses both source property and target property.
 
+Each link consists of
+
+- a source URI, specified in abbreviated form as source ID
+- a target URI, specified in abbreviated form as target ID
+
+The type of link ("relation") can optionally be configured.
 
 *This introduction needs to be expanded to better explain authority files etc.*

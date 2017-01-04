@@ -9,7 +9,7 @@ import codecs
 import itertools
 
 from .exceptions import WdmapperError, ArgumentError
-from .format import beacon, csv
+from .format import beacon, csv, ntriples
 from . import wikidata
 
 __version__ = '0.0.4'
@@ -18,8 +18,10 @@ __version__ = '0.0.4'
 commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync', 'help']
 """List if available commands."""
 
-formats = {f.name: f for f in [csv, beacon]}
+formats = {f.name: f for f in [csv, beacon, ntriples]}
 """Dict of input/output format names mapped to corresponding modules."""
+
+PY3 = sys.version_info[0] == 3
 
 
 def readers():
@@ -29,7 +31,7 @@ def readers():
 
 def writers():
     return dict((f, formats[f]) for f in formats
-                if hasattr(formats[f],'writer'))
+                if hasattr(formats[f],'Writer'))
 
 
 def _get_links(args):
@@ -49,15 +51,19 @@ def _get_links_header(args):
         'name': '{target[label]}',
         'description': 'Mapping from {source[label]}s to {target[label]}s',
         'prefix': '{source[template]}',
-        'target': '{target[template]}'
+        'target': '{target[template]}',
+        'relation': '{relation}'
     }
 
-    if args.source:
-        props = {'source': args.source, 'target': args.target}
-    else:
-        props = {'source': {'template': 'http://www.wikidata.org/entity/',
-                            'label': 'Wikidata ID'},
-                 'target': args.target}
+    props = {}
+    for name in ['source', 'target', 'relation']:
+        if getattr(args, name):
+            props[name] = getattr(args, name)
+
+    # direct links
+    if 'target' in props and 'source' not in props:
+        props['source'] = {'template': 'http://www.wikidata.org/entity/',
+                           'label': 'Wikidata ID'}
 
     for f in meta:
         try:
@@ -69,11 +75,12 @@ def _get_links_header(args):
 
 
 def _get_reader(args):
+    # TODO: add more reader formats
     reader = csv.reader(args.input, header=not args.no_header)
-    # TODO: args.source / args.target => meta.source / meta.target
     if args.limit:
         reader = itertools.islice(reader, args.limit)
-    return {}, reader
+    meta = _get_links_header(args)
+    return meta, reader
 
 
 def _get_diff(args):
@@ -93,11 +100,10 @@ def _get_diff(args):
 
 def _check_mappings(args):
     in_meta, in_links = _get_reader(args)
-    # TODO: set meta from args.source / args.target
     return in_meta, wikidata.get_deltas(links=in_links, **args.__dict__)
 
 
-def _check_args(command, args):
+def _check_args(command, args_dict):
     """Check and normalize wdmapper arguments.
 
     Raises:
@@ -107,10 +113,17 @@ def _check_args(command, args):
     if command not in commands:
         raise ArgumentError('command', allow=commands)
 
+    # convert arguments into an object for access via dot-notation
+    args = type(str('Arguments'), (object,), {})()
+    for name in ['source', 'target',
+                 'format', 'to', 'input', 'output', 'writer',
+                 'sort', 'limit', 'relation', 'dry', 'cache',
+                 'debug', 'no_header']:
+        setattr(args, name, args_dict[name] if name in args_dict else None)
+
     # 'from' is a reserved word so better rename the argument to 'format'
-    if hasattr(args, 'from'):
-        args.format = getattr(args, 'from')
-        delattr(args, 'from')
+    if 'from' in args_dict:
+        args.format = args_dict['from']
 
     if args.format:
         args.format = args.format.lower()
@@ -123,29 +136,31 @@ def _check_args(command, args):
         allow = writers().keys()
         if args.to not in allow:
             raise ArgumentError('output format', allow=allow)
+    else:
+        args.to = 'beacon'
 
-    if command == 'diff':
+    if command == 'diff' and args.limit:
         args.sort = True
-
-    if not hasattr(args, 'writer'):
-        args.writer = None
 
     if args.debug and not callable(args.debug):
         args.debug = lambda s: print(s, '\n', file=sys.stderr)
+
+    prefixes = {'skos:': 'http://www.w3.org/2004/02/skos/core#',
+                'owl:': 'http://www.w3.org/2002/07/owl#',
+                'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'}
+    if args.relation:
+        for prefix, uri in prefixes.items():
+            if args.relation[:len(prefix)] == prefix:
+                args.relation = uri + args.relation[len(prefix):]
+                break
+
+    return args
 
 
 def wdmapper(command=None, **args):
     """Execute wdmapper."""
 
-    # convert arguments into an object for access via dot-notation
-    arguments = type(str('Arguments'), (object,), {})()
-    for name in args:
-        setattr(arguments, name, args[name])
-    args = arguments
-
-    _check_args(command, args)
-
-    PY3 = sys.version_info[0] == 3
+    args = _check_args(command, args)
 
     # open input file or stream
     if (args.input and args.input != '-'):
@@ -200,10 +215,7 @@ def wdmapper(command=None, **args):
     # initialize writer
     if not args.writer:
         header = (command == 'about' or not args.no_header)
-        if args.to == 'csv':
-            args.writer = csv.writer(args.output, header=header)
-        else:
-            args.writer = beacon.writer(args.output, header=header)
+        args.writer = writers()[args.to].Writer(args.output, header=header)
 
     # emit output
     if command in ['get', 'head', 'convert']:
