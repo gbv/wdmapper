@@ -12,7 +12,7 @@ from .exceptions import WdmapperError, ArgumentError
 from .format import beacon, csv, ntriples
 from . import wikidata
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 """Version number of module wdmapper."""
 
 commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync', 'help']
