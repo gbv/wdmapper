@@ -16,10 +16,8 @@ def test_constructor():
 
 def test_exception():
     l = Link('foo', 'bar')
-    with pytest.raises(ValueError):
-        l.source = None
-    assert l.source == 'foo'
-    assert l.target == 'bar'
+    l.source = None
+    assert l.valid() is False
     with pytest.raises(ValueError):
         l.target = []
 

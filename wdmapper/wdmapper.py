@@ -26,7 +26,7 @@ PY3 = sys.version_info[0] == 3
 
 def readers():
     return dict((f, formats[f]) for f in formats
-                if hasattr(formats[f],'reader'))
+                if hasattr(formats[f],'Reader'))
 
 
 def writers():
@@ -76,7 +76,7 @@ def _get_links_header(args):
 
 def _get_reader(args):
     # TODO: add more reader formats
-    reader = csv.reader(args.input, header=not args.no_header)
+    reader = csv.Reader(args.input, header=not args.no_header).links()
     if args.limit:
         reader = itertools.islice(reader, args.limit)
     meta = _get_links_header(args)

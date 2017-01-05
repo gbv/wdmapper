@@ -10,10 +10,10 @@ from wdmapper.link import Link
 
 def test_read():
     s = ' fö\t, "b""r"\n'
-    data = csv.reader(io.StringIO(s), header=True)
+    data = csv.Reader(io.StringIO(s), header=True).links()
     assert list(data) == []
 
-    data = csv.reader(io.StringIO(s), header=False)
+    data = csv.Reader(io.StringIO(s), header=False).links()
     assert list(data) == [Link('fö', 'b"r')]
 
 

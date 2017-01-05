@@ -48,10 +48,20 @@ Check whether all input mappings are also in Wikidata.
     $ # ...wait until Wikidata could have been modified...
     $ wdmapper check P214 P2428 < mappings.csv
 
-Each output line is preceded with "+ ", "- ", or "= " to indicate which links
-differ or are equal.
 
-Please use command diff instead if working on full sets of links.
+Each output line is preceded by a marker to indicate which input mappings have
+been found in Wikidata and how mappings in Wikidata differ from input mappings:
+
+- If the same link was found in Wikidata, it is preceded by "="
+
+- If a same link was found in Wikidata but with different annotation
+  (different item or item label), it is preceded by "~"
+
+- If the link was not found in Wikidata is is preceded by "+". Following link 
+  lines starting with "-" indicate that other links would have to be removed
+  or merged to add the missing link to Wikidata.
+
+Use command `diff` instead to compare full sets of mappings.
 
 
 diff
@@ -67,8 +77,12 @@ changed:
     $ # ...wait until Wikidata could have been modified...
     $ wdmapper diff P214 P2428 -t csv < mappings.csv
 
-Each output line is preceded with "+ " or "- " to indicate which links 
-differ.
+Each output line is preceded by "+ " if an input link is missing in Wikidata or
+"- " if a link from Wikidata is missing in the input.
+
+The output is sorted by links. Option "limit" implies option "sort" to get
+stable results. Use command `check` instead to compare a limited set of
+mappings against mappings on Wikidata.
 
 
 convert
@@ -87,7 +101,9 @@ Examples:
 add
 ---
 
-Add input mappings to mappings at Wikidata unless already there.
+Add input mappings to mappings at Wikidata unless already there. Better first
+try command `check` and/or command "add" with option "dry" to find out what
+statements would be added to Wikidata.
 
 *not implemented yet*
 

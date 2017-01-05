@@ -5,6 +5,8 @@ next
 ----
 -  Add option 'relation'
 -  Add ntriples output format
+-  Fix command 'check' for indirect links
+-  Fix lookup of properties by URL template
 
 0.0.4 (2017-01-03)
 ------------------

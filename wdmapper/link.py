@@ -53,11 +53,7 @@ class Link(object):
 
     @source.setter
     def source(self, value):
-        value = Link.whitespace_normalize(value)
-        if value == '':
-            raise ValueError('Link source must not be empty')
-        else:
-            self._source = value
+        self._source = Link.whitespace_normalize(value)
 
     @property
     def target(self):
@@ -74,6 +70,9 @@ class Link(object):
     @annotation.setter
     def annotation(self, value):
         self._annotation = Link.whitespace_normalize(value)
+
+    def valid(self):
+        return self._source != ''
 
     def tokens(self):
         return (self._source, self._target, self._annotation)

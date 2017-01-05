@@ -21,9 +21,8 @@ def get_property(p, cache=True, debug=False):
         where = 'BIND(<' + uri + '> AS ?p)'
     elif Property.ns_pattern.match(p):
         # get by URL templateL (P1630)
-        formatter_url = json.dumps(p)   # quote and escape literal
-        if formatter_url.find('$1') == -1:
-            formatter_url += '$1'
+        url = p + '$1' if p.find('$1') == -1 else p
+        formatter_url = json.dumps(url)   # quote and escape literal
         where = '?p wdt:P1630 %s' % formatter_url
     else:
         # get by label
@@ -136,7 +135,13 @@ def get_deltas(source, target, links, language='en', cache=True, debug=False, **
             # or differnt mappings, one with other source, one with other target
             # or same mapping but different item (rare but possible)!
             delta = [('-', l) for l in wd_links]
+            # indirect link with known QID => put QID into link
+            if source is not None and len(delta) == 1:
+                if delta[0][1].source == '' or delta[0][1].target == '':
+                    link.annotation = delta[0][1].annotation
+                    delta = []
             delta.insert(0, ('+', link))
+
             yield delta
 
 
