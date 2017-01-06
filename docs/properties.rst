@@ -33,7 +33,7 @@ examples execute the :doc:`command line client <cli>` with default command
         $ wdmapper 'https://viaf.org/viaf/$1'
         $ wdmapper https://viaf.org/viaf/
 
-- by exact property label
+- by property label
 
     .. code:: shell
 

@@ -30,7 +30,7 @@ def get_property(p, cache=True, debug=False):
         where = '?p rdfs:label ?l . FILTER (str(?l) = %s)' % label
 
     query = """\
-            SELECT ?p ?label ?template ?pattern ?type WHERE {{
+            SELECT DISTINCT ?p ?label ?template ?pattern ?type WHERE {{
                 {0} .
                 ?p a wikibase:Property .
                 ?p wikibase:propertyType ?type .
@@ -42,17 +42,25 @@ def get_property(p, cache=True, debug=False):
                 }}
             }}""".format(where, 'en')
 
-    res = sparql_query(query, cache=cache, debug=debug)
+    properties = []
+    for row in sparql_query(query, cache=cache, debug=debug):
+        # filter out invalid properties. TODO: move to SPARQL query
+        try:
+            properties.append(Property(row))
+        except WdmapperError:
+            pass
 
-    if not res:
+    if not properties:
         raise WdmapperError('property not found: %s' % p)
-    if len(res) > 1:
-        raise WdmapperError('multiple properties: %s' % p)
 
-    prop = Property(res[0])
+    if len(properties) > 1:
+        raise WdmapperError('multiple properties:\n' + '\n'.join(
+                            ['{label} ({id})'.format(**p.__dict__)
+                             for p in properties]))
+
     if debug:
-        debug(repr(prop))
-    return prop
+        debug(repr(properties[0]))
+    return properties[0]
 
 
 def get_links(source, target, sort=False, limit=0, cache=True, debug=False, **args):
