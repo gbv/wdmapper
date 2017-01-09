@@ -16,6 +16,10 @@ def test_read():
     data = csv.Reader(io.StringIO(s), header=False).links()
     assert list(data) == [Link('fö', 'b"r')]
 
+    s = 'target, source\nbar, foo\n , \ndoz'
+    data = csv.Reader(io.StringIO(s), header=True).links()
+    assert list(data) == [Link('foo','bar'),Link(None,'doz')]
+
 
 def test_write():
     out = io.StringIO("")

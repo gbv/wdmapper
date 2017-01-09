@@ -14,15 +14,17 @@ def test_constructor():
     assert l.annotation is None
 
 
-def test_valid():
-    l = Link('', 'bar')
-    assert l.valid() is False
+def test_empty_string():
+    l = Link('\t', 'bar')
+    assert l.source is None
     l.source = 'foo'
-    l.target = ''
-    assert l.valid() is True
+    l.target = ' '
+    assert l.source is not None
     assert l.target is None
+    assert bool(l) is True
     l.source = None
-    assert l.valid() is False
+    assert l.source is None
+    assert bool(l) is False
 
 
 def test_exception():

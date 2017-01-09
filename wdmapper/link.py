@@ -20,7 +20,7 @@ class Link(object):
 
     A Link element consists of three tokens
 
-    * a mandatory source token
+    * a source token (mandatoy in most applications)
     * an optional target token
     * an optional annotation token
 
@@ -71,11 +71,13 @@ class Link(object):
     def annotation(self, value):
         self._annotation = Link.whitespace_normalize(value)
 
-    def valid(self):
-        return self._source is not None
-
     def tokens(self):
         return (self._source, self._target, self._annotation)
+
+    def __bool__(self):
+        return not all(True if t is None else False for t in self.tokens())
+
+    __nonzero__ = __bool__
 
     def __lt__(self, other):
         return self.tokens() < other.tokens()

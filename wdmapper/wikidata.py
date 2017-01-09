@@ -131,9 +131,9 @@ def get_deltas(source, target, links, language='en', cache=True, debug=False, **
         wd_links = [_link_from_wdsparql_row(row) for row in res]
 
         if (len(wd_links) == 1 and
-           wd_links[0].source == link.source and
-           wd_links[0].target == link.target):
-            if wd_links[0].annotation == link.annotation:
+           link.source in [wd_links[0].source, None] and
+           link.target in [wd_links[0].target, None]):
+            if link == wd_links[0]:
                 yield [('=', wd_links[0])]
             else:
                 yield [('~', wd_links[0])]

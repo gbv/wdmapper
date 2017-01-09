@@ -60,12 +60,14 @@ class Reader:
                     try:
                         link = Link(source=mapping['source'])
                     except (ValueError, KeyError):
-                        raise WdmapperError('missing source in line %d' % line)
+                        # raise WdmapperError('missing source in line %d' % line)
+                        link = Link('')
                     if 'target' in mapping:
                         link.target = mapping['target']
                     if 'annotation' in mapping:
                         link.annotation = mapping['annotation']
-                    yield link
+                    if link:
+                        yield link
                 except ValueError:
                     pass
             else:
