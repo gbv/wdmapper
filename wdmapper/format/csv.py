@@ -7,6 +7,7 @@ import csv
 import json
 import sys
 
+from ..writer import LinkWriter
 from ..link import Link
 from ..exceptions import WdmapperError
 
@@ -60,11 +61,8 @@ class Reader:
                         link = Link(source=mapping['source'])
                     except (ValueError, KeyError):
                         raise WdmapperError('missing source in line %d' % line)
-                    if 'target' not in mapping:
-                        raise WdmapperError('missing target in line %d' % line)
-                    link.target = mapping['target']  # also normalizes
-                    if link.target == '':
-                        raise WdmapperError('missing target in line %d' % line)
+                    if 'target' in mapping:
+                        link.target = mapping['target']
                     if 'annotation' in mapping:
                         link.annotation = mapping['annotation']
                     yield link
@@ -74,7 +72,7 @@ class Reader:
                 header_row = row
 
 
-class Writer:
+class Writer(LinkWriter):
     """
     Writes Links in CSV format.
 
@@ -86,11 +84,14 @@ class Writer:
 
     @classmethod
     def escape(cls, s):
-        # always remove newlines and tab and trim whitespace
-        s = s.rstrip('\r\n\t').strip()
-        if cls.separator in s or '"' in s:
-            s = json.dumps(s).replace('\\"','""')
-        return s
+        if s is None:
+            return ''
+        else:
+            # always remove newlines and tab and trim whitespace
+            s = s.rstrip('\r\n\t').strip()
+            if cls.separator in s or '"' in s:
+                s = json.dumps(s).replace('\\"','""')
+            return s
 
     def __init__(self, stream, header=True):
         self.stream = stream
@@ -116,9 +117,4 @@ class Writer:
         if row[-1] == '':   # omit annotation if empty
             row.pop()
 
-        print(self.separator.join(row), file=self.stream)
-
-    def write_delta(self, delta):  # TODO: move duplicated code to base class
-        for op, link in delta:
-            self.stream.write(op + ' ')
-            self.write_link(link)
+        self.print(self.separator.join(row))

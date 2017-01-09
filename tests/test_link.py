@@ -10,16 +10,24 @@ from wdmapper.link import Link
 def test_constructor():
     l = Link(' f\r\t\n ö\n', annotation=None)
     assert l.source == 'f ö'
-    assert l.target == ''
-    assert l.annotation == ''
+    assert l.target is None
+    assert l.annotation is None
+
+
+def test_valid():
+    l = Link('', 'bar')
+    assert l.valid() is False
+    l.source = 'foo'
+    l.target = ''
+    assert l.valid() is True
+    assert l.target is None
+    l.source = None
+    assert l.valid() is False
 
 
 def test_exception():
-    l = Link('foo', 'bar')
-    l.source = None
-    assert l.valid() is False
     with pytest.raises(ValueError):
-        l.target = []
+        Link('foo','bar').target = []
 
 
 def test_repr():

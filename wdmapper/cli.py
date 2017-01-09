@@ -99,6 +99,9 @@ def main():
     Command line arguments are taken from ``sys.argv`` and decoded to Unicode.
     """
 
-    encoding = sys.stdout.encoding or 'utf-8'
-    args = map(lambda arg: arg.decode(encoding), sys.argv[1:])
-    run(*args)
+    try:
+        encoding = sys.stdout.encoding or 'utf-8'
+        args = map(lambda arg: arg.decode(encoding), sys.argv[1:])
+        run(*args)
+    except KeyboardInterrupt:
+        pass

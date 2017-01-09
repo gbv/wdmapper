@@ -7,8 +7,7 @@ from functools import total_ordering
 import re
 import sys
 
-PY3 = sys.version_info[0] == 3
-if PY3:
+if sys.version_info[0] == 3:  # PY3
     text_type = str
 else:
     text_type = unicode
@@ -26,7 +25,7 @@ class Link(object):
     * an optional annotation token
 
     All tokens are witespace-normalized (as defined by BEACON) Unicode strings.
-    A missing token is equal to the empty string.
+    An empty string is equal to a missing token (value ``None``).
 
     Link objects can be compared, represented with repr(), and hashed for
     set-operations.
@@ -34,12 +33,13 @@ class Link(object):
 
     @staticmethod
     def whitespace_normalize(value):
-        if value is None:
-            return ''
-        if not isinstance(value, text_type):
-            raise ValueError('Link token must be Unicode string')
-        value = value.strip('\n\r\t ')
-        return re.sub('[\n\r\t ]+', ' ', value)
+        if value is not None:
+            if not isinstance(value, text_type):
+                raise ValueError('Link token must be Unicode string')
+            value = re.sub('[\n\r\t ]+', ' ', value.strip('\n\r\t '))
+            if value == '':
+                value = None
+        return value
 
     def __init__(self, source, target=None, annotation=None):
         self.source = source
@@ -72,7 +72,7 @@ class Link(object):
         self._annotation = Link.whitespace_normalize(value)
 
     def valid(self):
-        return self._source != ''
+        return self._source is not None
 
     def tokens(self):
         return (self._source, self._target, self._annotation)
@@ -90,10 +90,10 @@ class Link(object):
 
     def __repr__(self):
         args = [repr(self._source)]
-        if self._target != "":
+        if self._target is not None:
             args.append(repr(self._target))
-            if self._annotation != "":
+            if self._annotation is not None:
                 args.append(repr(self._annotation))
-        elif self._annotation != "":
+        elif self._annotation is not None:
             args.append('annotation=' + repr(self._annotation))
         return 'Link(' + ', '.join(args) + ')'

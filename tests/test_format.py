@@ -55,12 +55,3 @@ def test_missing_source(stdin, capsys):
     out, err = capsys.readouterr()
     assert out == 'source, target, annotation\n'
     assert err == 'missing source in line 2\n'
-
-
-def test_missing_target(stdin, capsys):
-    with pytest.raises(SystemExit):
-        with stdin("foo,\n"):
-            run('convert', '-H', '-t', 'csv')
-    out, err = capsys.readouterr()
-    assert out == ''
-    assert err == 'missing target in line 1\n'

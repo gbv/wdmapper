@@ -6,6 +6,7 @@ from __future__ import unicode_literals, print_function
 import sys
 import re
 
+from ..writer import LinkWriter
 from ..link import Link
 from ..exceptions import WdmapperError
 
@@ -27,14 +28,11 @@ extension = '.txt'
 """extension of BEACON files."""
 
 
-class Writer:
+class Writer(LinkWriter):
 
     def __init__(self, stream, header=True):
         self.stream = stream
         self.initialized = header is False
-
-    def print(self, s):
-        print(s, file=self.stream)
 
     def init(self, meta):
         if self.initialized:
@@ -57,15 +55,14 @@ class Writer:
         if not self.initialized:
             raise WdmapperError(str(self.__class__) +
                                 " instance not initialized!")
-        row = [link.source]
 
-        # TODO: omit if possible
-        row.append(link.annotation)
-        row.append(link.target)
+        token = ['' if s is None else s for s in
+                 [link.source, link.annotation, link.target]]
 
-        self.print('|'.join(row))
+        if token[2] in ['', token[1]]:  # target missing or equal to source
+            token.pop()
 
-    def write_delta(self, delta):  # TODO: move duplicated code to base class
-        for op, link in delta:
-            self.stream.write(op + ' ')
-            self.write_link(link)
+        if token:
+            if len(token) == 2 and token[0] == token[1]:  # source == target
+                token.pop()
+            self.print('|'.join(token))
