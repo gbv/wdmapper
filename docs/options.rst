@@ -7,20 +7,23 @@ with option ``--help`` to get a full list of command line arguments.
 Input and output
 ----------------
 
-Option ``input`` (``--input`` or ``-i``) and option ``output`` (``--output`` or
-``-o``) can be used to select an **input or output file**. The special value
+Option **input** (``--input`` or ``-i``) and option **output** (``--output`` or
+``-o``) can be used to select an input or output **file**. The special value
 ``-`` is used as default to denote the standard input or standard output,
 respectively. Input is always assumed to be Unicode in UTF-8 encoding.
 
-Option ``from`` (``--from`` or ``-f``) and option ``to`` (``--to`` or ``-t``)
-can be used to select **input or output format**. Default input format is
+Option **from** (``--from`` or ``-f``) and option **to** (``--to`` or ``-t``)
+can be used to select input or output **format**. Default input format is
 ``csv`` and default output format is ``beacon``. If no input/output format has
 been specified, it is guessed from input/output filename extension, for
 instance ``.csv`` for CSV format and ``.txt`` for BEACON format.
 
-Supported input formats are: csv
+Supported formats
+^^^^^^^^^^^^^^^^^
 
-Supported output formats are: csv, beacon, nt
+input formats: csv
+
+output formats: csv, beacon, nt
 
 Examples
 ^^^^^^^^
@@ -30,8 +33,27 @@ Examples
     $ wdmapper convert -i mappings.csv -o mappings.txt
     $ wdmapper convert < mappings.csv -t beacon > mappings.txt
 
-Additional options and arguments
---------------------------------
+limit
+-----
 
-``limit``, ``sort``, ``debug``, ``cache``, ``header``, ``dry``, ``relation``
+sort
+----
+
+Sort alphabetically.
+
+cache
+-----
+
+
+header
+------
+
+dry
+---
+
+relation
+--------
+
+debug
+-----
 

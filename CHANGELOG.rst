@@ -1,10 +1,15 @@
 History
 =======
 
-next
-----
--  Add option 'relation'
+0.0.6 (2017-01-13)
+------------------
+-  Add basic support of BEACON input format
+-  Improve lookup of properties by label
+
+0.0.5 (2017-01-05)
+------------------
 -  Add ntriples output format
+-  Add option 'relation'
 -  Fix command 'check' for indirect links
 -  Fix lookup of properties by URL template
 

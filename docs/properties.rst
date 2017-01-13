@@ -39,3 +39,4 @@ examples execute the :doc:`command line client <cli>` with default command
 
         $ wdmapper 'VIAF ID'
 
+Target and source property can also be specified in input format BEACON.

@@ -11,7 +11,7 @@ class LinkWriter:
         print(s, file=self.stream)
         try:
             self.stream.flush()
-        except IOError:
+        except IOError:  # raised for instance if stream has been closed
             pass
 
     def write_delta(self, delta):

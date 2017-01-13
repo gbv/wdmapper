@@ -12,7 +12,7 @@ from .exceptions import WdmapperError, ArgumentError
 from .format import beacon, csv, ntriples
 from . import wikidata
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 """Version number of module wdmapper."""
 
 commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync', 'help']
@@ -75,11 +75,35 @@ def _get_links_header(args):
 
 
 def _get_reader(args):
-    # TODO: add more reader formats
-    reader = csv.Reader(args.input, header=not args.no_header).links()
+    if args.format == 'beacon':
+        meta, reader = beacon.Reader(args.input).read()
+
+        if 'target' in meta:
+            target = wikidata.get_property(meta['target'], cache=args.cache, debug=args.debug)
+            if args.target and args.target.id != target.id:
+                raise WdmapperError('Different target properties %s (argument) and %s (input)!'
+                                    % (args.target.id, target.id))
+            args.target = target
+
+        if 'prefix' in meta:
+            source = meta['prefix']  # TODO: rename
+            if source == 'http://www.wikidata.org/entity/':
+                source = {'template': 'http://www.wikidata.org/entity/',
+                          'label': 'Wikidata ID'}
+            else:
+                source = wikidata.get_property(source, cache=args.cache, debug=args.debug)
+                if args.source and args.source.uri != source.uri:
+                    raise WdmapperError('Different source properties %s (argument) and %s (input)!'
+                                        % (args.source.id, source.id))
+            args.source = source
+
+    else:  # csv as default
+        reader = csv.Reader(args.input, header=not args.no_header).links()
+        meta = _get_links_header(args)
+
     if args.limit:
         reader = itertools.islice(reader, args.limit)
-    meta = _get_links_header(args)
+
     return meta, reader
 
 

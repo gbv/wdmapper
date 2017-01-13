@@ -3,6 +3,8 @@
 
 from __future__ import unicode_literals, print_function
 
+import functools
+from itertools import chain
 import sys
 import re
 
@@ -26,6 +28,45 @@ name = 'beacon'
 
 extension = '.txt'
 """extension of BEACON files."""
+
+
+class Reader(object):
+
+    def __init__(self, stream, header=True):
+        self.stream = stream
+        self.meta = {}
+
+    def read(self):
+        """Return meta fields and link token generator."""
+
+        stream = iter(self.stream.readline, '')  # support streaming input
+
+        # read meta lines
+        for line in stream:
+            if line[0] == '#':
+                key, value = line[1:].split(':',1)  # TODO: split at : or space or tab
+                key = key.strip()
+                if re.match('^[A-Z]+$', key):
+                    self.meta[key.lower()] = value.strip()
+            else:
+                self.stream = chain([line], stream)  # push back
+                break
+
+        return (self.meta, [l for l in self.links() if l])
+
+    def links(self):
+        """Read link lines and generate links from link tokens."""
+        for line in self.stream:
+            line = line.strip()
+            token = line.split('|')
+            if len(token) == 1:
+                yield Link(source=token[0])
+            elif len(token) == 2:
+                # TODO: support alternative syntax
+                # TODO: could be empty link!
+                yield Link(source=token[0], annotation=token[1])
+            else:
+                yield Link(source=token[0], annotation=token[1], target=token[2])
 
 
 class Writer(LinkWriter):
