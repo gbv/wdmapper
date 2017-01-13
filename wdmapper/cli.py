@@ -10,12 +10,12 @@ from .exceptions import WdmapperError
 
 
 def parse_args(argv):
-    """parse wdmapper command line arguments."""
+    """Parse wdmapper command line arguments."""
 
     parser = argparse.ArgumentParser(
         prog='wdmapper',
         description="Manage Wikidata authority file mappings.",
-        epilog="See <https://github.com/gbv/wdmapper#readme> for details."
+        epilog="See <https://wdmapper.readthedocs.io/> for details."
     )
 
     parser.add_argument('-f', '--from', metavar='NAME',
@@ -27,7 +27,7 @@ def parse_args(argv):
     parser.add_argument('-o', '--output', default='-', metavar='OUT',
                         help='output file to write to (default: - for STDOUT)')
     parser.add_argument('-s', '--sort', action='store_true',
-                        help='sort mappings for normalized output')
+                        help='sort mappings for stable output')
     parser.add_argument('-l', '--limit', metavar='N', type=int, default=0,
                         help='maximum number of mappings to process')
     parser.add_argument('-H', '--no-header', dest='no_header', action='store_true',
@@ -35,14 +35,16 @@ def parse_args(argv):
     parser.add_argument('-C', '--no-cache', dest='cache',
                         action='store_false', default=True,
                         help='disable caching')
-    parser.add_argument('-r', '--relation', metavar='R',
-                        help='mapping relation URI such as skos:exactMatch or owl:sameAs')
+    parser.add_argument('-g', '--language', metavar='S',
+                        help='language of labels')
+    parser.add_argument('-r', '--relation', metavar='S',
+                        help='mapping relation URI such as skos:exactMatch')
     parser.add_argument('-n', '--dry-run', dest='dry', action='store_true',
                         help='don\'t perform any edits on Wikidata')
     parser.add_argument('-d', '--debug', action='store_true',
                         help='debug mode')
     parser.add_argument('-V', '--version', action='store_true',
-                        help='show version number of this script')
+                        help='show version number of wdmapper')
 
     parser.add_argument('command', nargs='?',
                         help=', '.join(wdmapper.commands))

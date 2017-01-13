@@ -78,8 +78,11 @@ def _get_reader(args):
     if args.format == 'beacon':
         meta, reader = beacon.Reader(args.input).read()
 
+        p_args = {k: getattrs(args,k) for k in ('language', 'cache', 'debug')}
+
         if 'target' in meta:
-            target = wikidata.get_property(meta['target'], cache=args.cache, debug=args.debug)
+
+            target = wikidata.get_property(meta['target'], p_args)
             if args.target and args.target.id != target.id:
                 raise WdmapperError('Different target properties %s (argument) and %s (input)!'
                                     % (args.target.id, target.id))
@@ -91,13 +94,13 @@ def _get_reader(args):
                 source = {'template': 'http://www.wikidata.org/entity/',
                           'label': 'Wikidata ID'}
             else:
-                source = wikidata.get_property(source, cache=args.cache, debug=args.debug)
+                source = wikidata.get_property(source, p_args)
                 if args.source and args.source.uri != source.uri:
                     raise WdmapperError('Different source properties %s (argument) and %s (input)!'
                                         % (args.source.id, source.id))
             args.source = source
 
-    else:  # csv as default
+    elif args.format == 'csv':
         reader = csv.Reader(args.input, header=not args.no_header).links()
         meta = _get_links_header(args)
 
@@ -141,7 +144,7 @@ def _check_args(command, args_dict):
     args = type(str('Arguments'), (object,), {})()
     for name in ['source', 'target',
                  'format', 'to', 'input', 'output', 'writer',
-                 'sort', 'limit', 'relation', 'dry', 'cache',
+                 'sort', 'limit', 'language', 'relation', 'dry', 'cache',
                  'debug', 'no_header']:
         setattr(args, name, args_dict[name] if name in args_dict else None)
 
@@ -154,6 +157,8 @@ def _check_args(command, args_dict):
         allow = readers().keys()
         if args.format not in allow:
             raise ArgumentError('input format', allow=allow)
+    else:
+        args.format = 'csv'
 
     if args.to:
         args.to = args.to.lower()
@@ -220,7 +225,8 @@ def wdmapper(command=None, **args):
     for which in ['source', 'target']:
         prop = getattr(args, which)
         if prop is not None:
-            prop = wikidata.get_property(prop, cache=args.cache, debug=args.debug)
+            prop = wikidata.get_property(prop, language=args.language,
+                                         cache=args.cache, debug=args.debug)
             setattr(args, which, prop)
 
     # execute selected command

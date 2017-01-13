@@ -1,6 +1,10 @@
 History
 =======
 
+0.0.7
+------------------
+-  Add option 'language'
+
 0.0.6 (2017-01-13)
 ------------------
 -  Add basic support of BEACON input format

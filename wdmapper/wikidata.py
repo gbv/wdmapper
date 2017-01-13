@@ -11,8 +11,11 @@ from .property import Property
 from .link import Link
 
 
-def get_property(p, cache=True, debug=False):
+def get_property(p, language='en', cache=True, debug=False):
     """Get property data from Wikidata."""
+
+    if language is None:
+        language = 'en'
 
     pid = Property.match(p)
     if pid:
@@ -40,7 +43,7 @@ def get_property(p, cache=True, debug=False):
                     bd:serviceParam wikibase:language "{1}" .
                     ?p rdfs:label ?label .
                 }}
-            }}""".format(where, 'en')
+            }}""".format(where, language)
 
     properties = []
     for row in sparql_query(query, cache=cache, debug=debug):
@@ -63,15 +66,18 @@ def get_property(p, cache=True, debug=False):
     return properties[0]
 
 
-def get_links(source, target, sort=False, limit=0, cache=True, debug=False, **args):
+def get_links(source, target, sort=False, limit=0, language='en', cache=True, debug=False, **args):
     """Get an iterator of links with given properties."""
+
+    if language is None:
+        language = 'en'
 
     if source is None:
         query = """\
 SELECT ?item ?target ?annotation WHERE {{
     ?item wdt:{target[id]} ?target .
     OPTIONAL {{ ?item rdfs:label ?annotation.
-               FILTER(LANG(?annotation) = "en") }}
+               FILTER(LANG(?annotation) = "{language}") }}
 }}"""
         fields = '?target'
     else:
@@ -82,7 +88,7 @@ SELECT ?item ?source ?target WHERE {{
 }}"""
         fields = '?source ?target'
 
-    query = query.format(source=source, target=target)
+    query = query.format(source=source, target=target, language=language)
 
     if (sort):
         query += '\nORDER BY ' + fields
@@ -101,6 +107,9 @@ def get_deltas(source, target, links, language='en', cache=True, debug=False, **
     A delta is a list of changes, each a tuple of operator (character) and link.
     In contrast to diffs, the same change may be emitted multiple times.
     """
+
+    if language is None:
+        language = 'en'
 
     if source is None:
         sparql = """SELECT DISTINCT ?item ?target ?annotation WHERE {{

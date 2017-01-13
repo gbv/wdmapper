@@ -33,27 +33,55 @@ Examples
     $ wdmapper convert -i mappings.csv -o mappings.txt
     $ wdmapper convert < mappings.csv -t beacon > mappings.txt
 
+
+Mapping retrieval
+-----------------
+
 limit
------
+^^^^^
+
+Limit maximum number of mappings to process.
 
 sort
-----
+^^^^
 
-Sort alphabetically.
+Sort mappings (alphabetically) for stable output.
+
+language
+^^^^^^^^
+
+Specify language of labels.
 
 cache
------
+^^^^^
+
+Disable caching.
 
 
-header
-------
+Wikidata editing
+----------------
 
 dry
----
+^^^
+
+Don't perform any edits on Wikidata
+
+
+Additional output control
+-------------------------
+
+header
+^^^^^^
+
+Read/write CSV/BEACON without header. *This option is experimental.*
 
 relation
---------
+^^^^^^^^
+
+Mapping relation URI such as ``skos:exactMatch`` or ``owl:sameAs``.
 
 debug
------
+^^^^^
+
+Enable debugging mode.
 
