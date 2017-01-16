@@ -143,7 +143,7 @@ def _check_args(command, args_dict):
     args = type(str('Arguments'), (object,), {})()
     for name in ['source', 'target',
                  'format', 'to', 'input', 'output', 'writer',
-                 'sort', 'limit', 'language', 'relation', 'dry', 'cache',
+                 'sort', 'limit', 'language', 'relation', 'dry', 'cache', 'type',
                  'endpoint', 'debug', 'no_header']:
         setattr(args, name, args_dict[name] if name in args_dict else None)
 

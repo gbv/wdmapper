@@ -64,7 +64,7 @@ def get_property(p, endpoint, language='en'):
     return properties[0]
 
 
-def get_links(source, target, endpoint, sort=False, limit=0, language='en', **args):
+def get_links(source, target, endpoint, sort=False, limit=0, language='en', type='', **args):
     """Get an iterator of links with given properties."""
 
     if language is None:
@@ -74,6 +74,7 @@ def get_links(source, target, endpoint, sort=False, limit=0, language='en', **ar
         query = """\
 SELECT ?item ?target ?annotation WHERE {{
     ?item wdt:{target[id]} ?target .
+    {type}
     OPTIONAL {{ ?item rdfs:label ?annotation.
                FILTER(LANG(?annotation) = "{language}") }}
 }}"""
@@ -83,10 +84,14 @@ SELECT ?item ?target ?annotation WHERE {{
 SELECT ?item ?source ?target WHERE {{
     ?item wdt:{source[id]} ?source .
     ?item wdt:{target[id]} ?target .
+    {type}
 }}"""
         fields = '?source ?target'
 
-    query = query.format(source=source, target=target, language=language)
+    if type:
+        type = '?item wdt:P31/wdt:P279* wd:%s' % (type)
+    query = query.format(source=source, target=target,
+                         language=language, type=type or '')
 
     if (sort):
         query += '\nORDER BY ' + fields
@@ -116,7 +121,7 @@ def get_deltas(source, target, links, endpoint, language='en', **args):
              {{ ?item wdt:{p_target} ?target }} UNION
              {{ BIND(<http://www.wikidata.org/entity/{source}> as ?item ) .
                 ?item wdt:{p_target} ?target }}
-            OPTIONAL {{ ?item rdfs:label ?annotation.
+             OPTIONAL {{ ?item rdfs:label ?annotation.
                        FILTER(LANG(?annotation) = "{language}") }}
           }}
         }}"""

@@ -5,6 +5,7 @@ History
 ------------------
 -  Add option 'language' to select language of labels
 -  Add option 'sparql' to customize Wikidata SPARQL endpoint
+-  Add option 'type' to filter Wikidata items by class
 
 0.0.6 (2017-01-13)
 ------------------

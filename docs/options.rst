@@ -50,7 +50,20 @@ Sort mappings (alphabetically) for stable output.
 language
 ^^^^^^^^
 
-Specify language of labels.
+Specify language of labels. English ("en") is used by default.
+
+type
+^^^^
+
+Filter Wikidata items to instances of some class or its subclasses. For
+instance the value `Q5 <https://www.wikidata.org/wiki/Q5>`_ (human) will only
+include mappings with Wikidata items about humans. Keep in mind that not all
+Wikidata items have proper instance statements and the class hierarchy often
+contains errors and unexpected subclasses!  See `wdtaxonomy
+<https://www.npmjs.com/package/wikidata-taxonomy>`_ for another command line
+tool to examine the Wikidata class hierarchy.
+
+This option is ignored for command "check"!
 
 cache
 ^^^^^
