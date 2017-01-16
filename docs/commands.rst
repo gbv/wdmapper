@@ -63,6 +63,16 @@ been found in Wikidata and how mappings in Wikidata differ from input mappings:
 
 Use command `diff` instead to compare full sets of mappings.
 
+Use cases:
+
+* Detect mapping changes in Wikidata
+* Check whether mappings can be added to Wikidata
+* Lookup mappings for given identifiers
+
+Example::
+
+    echo ,114 | ./wdmapper.py --no-header check P757
+
 
 diff
 ----

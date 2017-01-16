@@ -2,11 +2,11 @@ Usage
 =====
 
 wdmapper can be used both, as :doc:`command line application <cli>` and as
-:doc:`Python library <api>`. This document first describes how to :doc:`install
-<installation>` and invoke wdmapper :doc:`from the command line <cli>`.
+:doc:`Python library <api>`. This document focuses on the command line client
+but its functionality can also used in pure Python code.
 
-Getting mappings and property information
------------------------------------------
+Get mappings and property information
+-------------------------------------
 
 The following call looks up three :doc:`mappings <mappings>` from Wikidata to
 `World Heritage Site identifiers <http://whc.unesco.org/en/list/>`_ as assigned
@@ -14,16 +14,15 @@ by UNESCO::
 
     $ wdmapper get P757 --limit 3
 
-Wikidata :doc:`properties <properties>` can also be referenced by their label,
-URI or URL. The call could also be written like this::
+Wikidata :doc:`properties <properties>` can also be referenced by label, URI or
+URL. The call could also be written like this::
 
     $ wdmapper get 'World Heritage Site ID' --limit 3
     $ wdmapper get 'http://whc.unesco.org/en/list/' --limit 3
     $ wdmapper get 'https://www.wikidata.org/wiki/Property:P757' --limit 3
 
-To get the mappings in stable order, add :doc:`option <options>` ``sort``.
-This will slow down the query so use with care! The default output format is
-called BEACON, so some mapping metadata is placed in front of the mappings::
+To get the mappings in stable order, add option :ref:`sort`.  The default
+output format BEACON includes mapping metadata before the actual mappings::
 
     $ wdmapper get P757 --limit 3 --sort
     #FORMAT: BEACON
@@ -36,16 +35,14 @@ called BEACON, so some mapping metadata is placed in front of the mappings::
     Q38095|Galápagos Islands|1
     Q6153869|Lower Valley of the Awash|10
 
-If only interested in the metadata Use :doc:`command <commands>` ``head``
-instead of ``get``. This command only loops up property information, resulting
-in a much quicker response --- useful to look up what some property id refers
-to.  Command ``head`` is assumed as default so the following calls are
-equivalent::
+Command :ref:`head` only looks up metadata for instance to quickly look up a
+Wikidata property.  This command is assumed as default if additional arguments
+are given so the following calls are equivalent::
 
     $ wdmapper head P757
     $ wdmapper P757
 
-Some output formats emit mappings without metadata::
+Output formats such as CSV emit mappings without metadata::
 
     $ wdmapper get P757 --limit 3 --sort --to csv
     source, target, annotation
@@ -70,8 +67,8 @@ TARGET above)::
 The last example shows how to connect multiple authority files. If two
 properties are given, wdmapper retrieves mappings from the first (source) to
 the second (target). The following call lists all Wikidata items that have both
-a TED speaker ID (http://www.wikidata.org/entity/P2611), and a Find a Grave
-grave ID (http://www.wikidata.org/entity/P535)::
+a `TED speaker ID <http://www.wikidata.org/entity/P2611>`_, and a `Find a Grave
+grave ID <http://www.wikidata.org/entity/P535>`_)::
 
     $ wdmapper get P2611 P535
     #FORMAT: BEACON
@@ -89,3 +86,15 @@ grave ID (http://www.wikidata.org/entity/P535)::
 
 In the case of such "indirect links", the annotation field is used to give the
 Wikidata item identifier.
+
+Check mappings and identifiers
+------------------------------
+
+Command :ref:`check` and command :ref:`diff` both compare mappings and/or
+identifiers provided from input file and mappings in Wikidata.
+
+For instance check whether Q42 still has the Find a Grave ID 22814::
+
+    $ echo Q42,22814 | wdmapper --no-header check P535
+    ~ Q42|Douglas Adams|22814
+

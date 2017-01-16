@@ -45,7 +45,8 @@ Limit maximum number of mappings to process.
 sort
 ^^^^
 
-Sort mappings (alphabetically) for stable output.
+Sort mappings (alphabetically) for stable output. This can slow down the query
+so only use if needed. set to ``False`` by default.
 
 language
 ^^^^^^^^
@@ -68,15 +69,18 @@ This option is ignored for command "check"!
 cache
 ^^^^^
 
-Disable caching.
+Disable caching. Set to ``False`` by default.
 
 sparql
 ^^^^^^
 
-Wikidata SPARQL endpoint, set to ``http://query.wikidata.org/sparql`` by default.
+Wikidata SPARQL endpoint, set to ``http://query.wikidata.org/sparql`` by
+default.
 
 Wikidata editing
 ----------------
+
+*Changing Wikidata has not been implemented yet.*
 
 dry
 ^^^

@@ -10,7 +10,8 @@ release: clean build
 	twine upload dist/*
 
 clean:
-	find . -name \*.pyc -or -name __pycache__ -exec rm -r -f '{}' ';'
+	find . -name \*.pyc -exec rm -f {} +
+	find . -name __pycache__ -exec rm -rf {} +
 	rm -rf *.egg *.egg-info
 	rm -rf dist build
 

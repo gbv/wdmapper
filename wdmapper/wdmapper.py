@@ -13,7 +13,7 @@ from .format import beacon, csv, ntriples
 from . import wikidata
 from .sparql import SparqlEndpoint
 
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 """Version number of module wdmapper."""
 
 commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync', 'help']

@@ -10,33 +10,40 @@ instance to "P214" but not to "P40".
 
 Properties in wdmapper can be referred to in different ways. The following
 examples execute the :doc:`command line client <cli>` with default command
-``head``:
+:ref:`head`:
 
-- by property identifier
+- property by identifier
 
     .. code:: shell
 
         $ wdmapper P214
 
-- by Wikidata property URI or URL
+- property by URI or URL
 
     .. code:: shell
 
         $ wdmapper http://www.wikidata.org/entity/P214
         $ wdmapper https://www.wikidata.org/wiki/Property:P214
 
-- by property `URL template <https://www.wikidata.org/wiki/Property:P1630>`__.
-  The placeholder ``$1`` can be omitted at the end of the URL.
+- property by `URL template <https://www.wikidata.org/wiki/Property:P1630>`__.
+  The placeholder ``$1`` can be omitted at the end of an URL
 
     .. code:: shell
 
         $ wdmapper 'https://viaf.org/viaf/$1'
         $ wdmapper https://viaf.org/viaf/
 
-- by property label
+- property by label (in any language)
 
     .. code:: shell
 
         $ wdmapper 'VIAF ID'
 
-Target and source property can also be specified in input format BEACON.
+Properties can be specified as :doc:`arguments <options>` and as part of
+mapping metadata in BEACON input format.
+
+Each :doc:`mapping <mappings>` has 
+
+- a target property for :ref:`direct links` from Wikidata to another authority file or
+
+- a source property and a target property for :ref:`indirect links` between two authority files.
