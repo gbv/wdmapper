@@ -49,7 +49,7 @@ class SparqlEndpoint:
             try:
                 data = json.loads(res)
             except ValueError as e:
-                if res.find('QueryTimeoutException') != -1:
+                if res.find(b'QueryTimeoutException') != -1:
                     e = 'query timeout'
                 raise WdmapperError(e)
 

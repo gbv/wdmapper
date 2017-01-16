@@ -71,25 +71,30 @@ def get_links(source, target, endpoint, sort=False, limit=0, language='en', type
         language = 'en'
 
     if source is None:
+        # TODO: wikibase:label service will use QID as default
+        # better use empty string instead!
         query = """\
 SELECT ?item ?target ?annotation WHERE {{
     ?item wdt:{target[id]} ?target .
-    {type}
-    OPTIONAL {{ ?item rdfs:label ?annotation.
-               FILTER(LANG(?annotation) = "{language}") }}
-}}"""
+    SERVICE wikibase:label {{
+      bd:serviceParam wikibase:language "{language}" .
+      ?item rdfs:label ?annotation .
+    }}
+"""
         fields = '?target'
     else:
         query = """\
 SELECT ?item ?source ?target WHERE {{
     ?item wdt:{source[id]} ?source .
     ?item wdt:{target[id]} ?target .
-    {type}
-}}"""
+"""
         fields = '?source ?target'
 
     if type:
-        type = '?item wdt:P31/wdt:P279* wd:%s' % (type)
+        query += '?item wdt:P31/wdt:P279* wd:%s' % (type)
+
+    query += '}}'
+
     query = query.format(source=source, target=target,
                          language=language, type=type or '')
 
