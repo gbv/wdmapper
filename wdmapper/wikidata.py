@@ -6,12 +6,12 @@ import json
 import sys
 
 from .exceptions import WdmapperError
-from .sparql import sparql_query
+from .sparql import SparqlEndpoint
 from .property import Property
 from .link import Link
 
 
-def get_property(p, language='en', cache=True, debug=False):
+def get_property(p, endpoint, language='en'):
     """Get property data from Wikidata."""
 
     if language is None:
@@ -46,7 +46,7 @@ def get_property(p, language='en', cache=True, debug=False):
             }}""".format(where, language)
 
     properties = []
-    for row in sparql_query(query, cache=cache, debug=debug):
+    for row in endpoint.query(query):
         # filter out invalid properties. TODO: move to SPARQL query
         try:
             properties.append(Property(row))
@@ -61,12 +61,10 @@ def get_property(p, language='en', cache=True, debug=False):
                             ['{label} ({id})'.format(**p.__dict__)
                              for p in properties]))
 
-    if debug:
-        debug(repr(properties[0]))
     return properties[0]
 
 
-def get_links(source, target, sort=False, limit=0, language='en', cache=True, debug=False, **args):
+def get_links(source, target, endpoint, sort=False, limit=0, language='en', **args):
     """Get an iterator of links with given properties."""
 
     if language is None:
@@ -95,13 +93,13 @@ SELECT ?item ?source ?target WHERE {{
     if (limit):
         query += '\nLIMIT {:d}'.format(limit)
 
-    res = sparql_query(query, cache=cache, debug=debug)
+    res = endpoint.query(query)
 
     for row in res:
         yield _link_from_wdsparql_row(row)
 
 
-def get_deltas(source, target, links, language='en', cache=True, debug=False, **args):
+def get_deltas(source, target, links, endpoint, language='en', **args):
     """Check a list of links against Wikipedia and return deltas.
 
     A delta is a list of changes, each a tuple of operator (character) and link.
@@ -136,7 +134,7 @@ def get_deltas(source, target, links, language='en', cache=True, debug=False, **
                               p_source=source.id if source else None,
                               p_target=target.id,
                               language=language)
-        res = sparql_query(query, cache=cache, debug=debug)
+        res = endpoint.query(query)
         wd_links = [_link_from_wdsparql_row(row) for row in res]
 
         if (len(wd_links) == 1 and

@@ -3,7 +3,8 @@ History
 
 0.0.7
 ------------------
--  Add option 'language'
+-  Add option 'language' to select language of labels
+-  Add option 'sparql' to customize Wikidata SPARQL endpoint
 
 0.0.6 (2017-01-13)
 ------------------

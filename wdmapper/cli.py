@@ -39,6 +39,8 @@ def parse_args(argv):
                         help='language of labels')
     parser.add_argument('-r', '--relation', metavar='S',
                         help='mapping relation URI such as skos:exactMatch')
+    parser.add_argument('--sparql', metavar='URL', dest='endpoint',
+                        help='Wikidata SPARQL endpoint')
     parser.add_argument('-n', '--dry-run', dest='dry', action='store_true',
                         help='don\'t perform any edits on Wikidata')
     parser.add_argument('-d', '--debug', action='store_true',

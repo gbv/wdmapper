@@ -6,43 +6,59 @@ import json
 import sys
 import textwrap
 
+from .exceptions import WdmapperError
+
 PY3 = sys.version_info[0] > 2
 
 if PY3:
     from urllib.parse import quote
-    from urllib.request import Request, HTTPError, urlopen
+    from urllib.request import Request, HTTPError, URLError, urlopen
 else:
-    from urllib2 import quote, Request, HTTPError, urlopen
+    from urllib2 import quote, Request, HTTPError, URLError, urlopen
 
 WIKIDATA = 'http://query.wikidata.org/sparql'
 
 
-def sparql_query(query, endpoint=WIKIDATA, cache=True, debug=False):
-    query = textwrap.dedent(query)
-    if debug:
-        debug(query)
+class SparqlEndpoint:
 
-    url = '%s?query=%s' % (endpoint, quote(query))
-    req = Request(url)
-    if not cache:
-        req.add_header('cache-control', 'no-cache')
-    req.add_header('Accept', 'application/sparql-results+json')
+    def __init__(self, endpoint=WIKIDATA, cache=True, debug=False):
+        self.endpoint = endpoint
+        self.cache = cache
+        self.debug = debug
 
-    res = urlopen(req).read()
-    if PY3:
-        res = res.decode('utf8')
+    def query(self, query):
+        query = textwrap.dedent(query)
+        if self.debug:
+            self.debug(query)
 
-    if res:
-        data = json.loads(res)
-    if data and 'results' in data:
-        result = []
-        qvars = data['head']['vars']
-        for row in data['results']['bindings']:
-            values = {}
-            for var in qvars:
-                if var in row:
-                    values[var] = row[var]['value']
-                else:
-                    values[var] = None
-            result.append(values)
-    return result
+        url = '%s?query=%s' % (self.endpoint, quote(query))
+        req = Request(url)
+        if not self.cache:
+            req.add_header('cache-control', 'no-cache')
+        req.add_header('Accept', 'application/sparql-results+json')
+
+        try:
+            res = urlopen(req).read()
+        except (URLError) as e:
+            raise WdmapperError(e)
+
+        if PY3:
+            res = res.decode('utf8')
+
+        if res:
+            try:
+                data = json.loads(res)
+            except ValueError as e:
+                raise WdmapperError(e)
+        if data and 'results' in data:
+            result = []
+            qvars = data['head']['vars']
+            for row in data['results']['bindings']:
+                values = {}
+                for var in qvars:
+                    if var in row:
+                        values[var] = row[var]['value']
+                    else:
+                        values[var] = None
+                result.append(values)
+        return result

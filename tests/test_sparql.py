@@ -1,8 +1,8 @@
 import pytest
 
-from wdmapper.sparql import sparql_query
+from wdmapper.sparql import SparqlEndpoint
 
 
 def test_sparql():
-    # just test whether function is defined
-    assert sparql_query is not None
+    # just test whether class is defined
+    assert SparqlEndpoint is not None

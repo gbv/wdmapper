@@ -57,6 +57,10 @@ cache
 
 Disable caching.
 
+sparql
+^^^^^^
+
+Wikidata SPARQL endpoint, set to ``http://query.wikidata.org/sparql`` by default.
 
 Wikidata editing
 ----------------

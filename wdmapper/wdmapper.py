@@ -11,6 +11,7 @@ import itertools
 from .exceptions import WdmapperError, ArgumentError
 from .format import beacon, csv, ntriples
 from . import wikidata
+from .sparql import SparqlEndpoint
 
 __version__ = '0.0.6'
 """Version number of module wdmapper."""
@@ -78,11 +79,9 @@ def _get_reader(args):
     if args.format == 'beacon':
         meta, reader = beacon.Reader(args.input).read()
 
-        p_args = {k: getattrs(args,k) for k in ('language', 'cache', 'debug')}
-
         if 'target' in meta:
 
-            target = wikidata.get_property(meta['target'], p_args)
+            target = wikidata.get_property(meta['target'], language=args.language, endpoint=args.endpoint)
             if args.target and args.target.id != target.id:
                 raise WdmapperError('Different target properties %s (argument) and %s (input)!'
                                     % (args.target.id, target.id))
@@ -94,7 +93,7 @@ def _get_reader(args):
                 source = {'template': 'http://www.wikidata.org/entity/',
                           'label': 'Wikidata ID'}
             else:
-                source = wikidata.get_property(source, p_args)
+                source = wikidata.get_property(source, language=args.language, endpoint=args.endpoint)
                 if args.source and args.source.uri != source.uri:
                     raise WdmapperError('Different source properties %s (argument) and %s (input)!'
                                         % (args.source.id, source.id))
@@ -145,7 +144,7 @@ def _check_args(command, args_dict):
     for name in ['source', 'target',
                  'format', 'to', 'input', 'output', 'writer',
                  'sort', 'limit', 'language', 'relation', 'dry', 'cache',
-                 'debug', 'no_header']:
+                 'endpoint', 'debug', 'no_header']:
         setattr(args, name, args_dict[name] if name in args_dict else None)
 
     # 'from' is a reserved word so better rename the argument to 'format'
@@ -182,6 +181,11 @@ def _check_args(command, args_dict):
             if args.relation[:len(prefix)] == prefix:
                 args.relation = uri + args.relation[len(prefix):]
                 break
+
+    if not args.endpoint:
+        args.endpoint = 'http://query.wikidata.org/sparql'
+    if not callable(getattr(args,'endpoint',None)):
+        args.endpoint = SparqlEndpoint(args.endpoint, cache=args.cache, debug=args.debug)
 
     return args
 
@@ -225,8 +229,7 @@ def wdmapper(command=None, **args):
     for which in ['source', 'target']:
         prop = getattr(args, which)
         if prop is not None:
-            prop = wikidata.get_property(prop, language=args.language,
-                                         cache=args.cache, debug=args.debug)
+            prop = wikidata.get_property(prop, language=args.language, endpoint=args.endpoint)
             setattr(args, which, prop)
 
     # execute selected command
