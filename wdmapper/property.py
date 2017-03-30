@@ -39,9 +39,11 @@ class Property(object):
         self.type = data.get('type')
         self.pattern = data.get('pattern')
         self.template = data.get('template')
+
         # type could also be: string, commons-media, globe-coordinate
-        if self.type != 'http://wikiba.se/ontology#ExternalId':
-            error = 'property {id} is not of type external-id!'
+        if (self.type != 'http://wikiba.se/ontology#ExternalId' and
+            self.type != 'http://wikiba.se/ontology#String'):
+            error = 'property {id} is not of type external-id or string!'
         elif not self.template:
             error = 'property {id} lacks URL template (P1630)'
         else:

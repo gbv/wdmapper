@@ -47,11 +47,7 @@ def get_property(p, endpoint, language='en'):
 
     properties = []
     for row in endpoint.query(query):
-        # filter out invalid properties. TODO: move to SPARQL query
-        try:
-            properties.append(Property(row))
-        except WdmapperError:
-            pass
+        properties.append(Property(row))
 
     if not properties:
         raise WdmapperError('property not found: %s' % p)

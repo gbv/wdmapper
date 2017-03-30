@@ -35,7 +35,7 @@ output format BEACON includes mapping metadata before the actual mappings::
     Q38095|Galápagos Islands|1
     Q6153869|Lower Valley of the Awash|10
 
-Command :ref:`head` only looks up metadata for instance to quickly look up a
+Command :ref:`head` only emits metadata, for instance to quickly look up a
 Wikidata property.  This command is assumed as default if additional arguments
 are given so the following calls are equivalent::
 
