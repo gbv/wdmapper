@@ -73,6 +73,7 @@ class Writer(LinkWriter):
 
     def __init__(self, stream, header=True):
         self.stream = stream
+        self.meta = {}
         self.initialized = header is False
 
     def init(self, meta):

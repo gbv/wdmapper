@@ -6,6 +6,16 @@ from __future__ import unicode_literals, print_function
 
 class LinkWriter:
 
+    def __init__(self, stream, header=True):
+        self.stream = stream
+        self.meta = {}
+
+    def mapping_type(self):
+        if 'relation' in self.meta and self.meta['relation']:
+            return self.meta['relation']
+        else:
+            return 'http://www.w3.org/2004/02/skos/core#exactMatch'
+
     def print(self, s):
         """Print a string without buffering."""
         print(s, file=self.stream)

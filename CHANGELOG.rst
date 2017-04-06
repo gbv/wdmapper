@@ -1,7 +1,11 @@
 History
 =======
 
-0.0.7
+0.0.8
+------------------
+-  Add 'json' output format (JSKOS Concept Mappings)
+
+0.0.7 (2017-01-17)
 ------------------
 -  Add option 'language' to select language of labels
 -  Add option 'sparql' to customize Wikidata SPARQL endpoint

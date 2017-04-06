@@ -33,7 +33,7 @@ def get_property(p, endpoint, language='en'):
         where = '?p rdfs:label ?l . FILTER (str(?l) = %s)' % label
 
     query = """\
-            SELECT DISTINCT ?p ?label ?template ?pattern ?type WHERE {{
+            SELECT DISTINCT ?p ?label ?template ?pattern ?type ?kos WHERE {{
                 {0} .
                 ?p a wikibase:Property .
                 ?p wikibase:propertyType ?type .

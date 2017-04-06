@@ -2,18 +2,14 @@
 """RDF/NTriples writer."""
 
 from __future__ import unicode_literals, print_function
-
+from ..writer import LinkWriter
 from ..exceptions import WdmapperError
 
 name = 'nt'
 extension = '.nt'
 
 
-class Writer:
-
-    def __init__(self, stream, header=True):
-        self.stream = stream
-        self.meta = {}
+class Writer(LinkWriter):
 
     def init(self, meta):
         self.meta = meta
@@ -21,7 +17,7 @@ class Writer:
     def write_link(self, link):
 
         # TODO: template replacing code may better be put elsewhere
-        if 'prefix' in self.meta:
+        if 'prefix' in self.meta and self.meta['prefix']:
             prefix = self.meta['prefix']
             if '$1' in prefix:
                 s = prefix.replace('$1', link.source)
@@ -30,7 +26,7 @@ class Writer:
         else:
             s = link.source
 
-        if 'target' in self.meta:
+        if 'target' in self.meta and self.meta['target']:
             target = self.meta['target']
             if '$1' in target:
                 o = target.replace('$1', link.target)
@@ -39,10 +35,7 @@ class Writer:
         else:
             o = link.target
 
-        if 'relation' in self.meta:
-            p = self.meta['relation']
-        if not p:
-            p = 'http://www.w3.org/2004/02/skos/core#exactMatch'
+        p = self.mapping_type()
 
         triple = map(lambda uri: '<%s>' % uri, [s,p,o])
         print(' '.join(triple), '.', file=self.stream)

@@ -9,7 +9,7 @@ import codecs
 import itertools
 
 from .exceptions import WdmapperError, ArgumentError
-from .format import beacon, csv, ntriples
+from .format import beacon, csv, ntriples, jskos
 from . import wikidata
 from .sparql import SparqlEndpoint
 
@@ -19,7 +19,7 @@ __version__ = '0.0.7'
 commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync', 'help']
 """List if available commands."""
 
-formats = {f.name: f for f in [csv, beacon, ntriples]}
+formats = {f.name: f for f in [csv, beacon, ntriples, jskos]}
 """Dict of input/output format names mapped to corresponding modules."""
 
 PY3 = sys.version_info[0] == 3
