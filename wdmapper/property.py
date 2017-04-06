@@ -16,6 +16,7 @@ class Property(object):
         label (str): English primary label of the property
         template (str): URL template to link via identifiers of this property
         pattern (str): regular expression of identifier of this property
+        scheme (str): Wikidata URI of the corresponding concept scheme
 
     Attributes can also be read as dictionary keys (e.g. ``p['uri'] == p.uri``)
     to facilitate access in formatting strings.
@@ -39,6 +40,7 @@ class Property(object):
         self.type = data.get('type')
         self.pattern = data.get('pattern')
         self.template = data.get('template')
+        self.scheme = data.get('scheme')
 
         # type could also be: string, commons-media, globe-coordinate
         if (self.type not in ['http://wikiba.se/ontology#ExternalId', 'http://wikiba.se/ontology#String']):

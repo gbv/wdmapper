@@ -30,6 +30,8 @@ output format BEACON includes mapping metadata before the actual mappings::
     #DESCRIPTION: Mapping from Wikidata IDs to World Heritage Site IDs
     #PREFIX: http://www.wikidata.org/entity/
     #TARGET: http://whc.unesco.org/en/list/
+    #SOURCESET: http://www.wikidata.org/entity/Q2013
+    #TARGETSET: http://www.wikidata.org/entity/Q19832918
 
     Q319841|Luxor Temple|087-002
     Q38095|Galápagos Islands|1
@@ -76,6 +78,7 @@ grave ID <http://www.wikidata.org/entity/P535>`_)::
     #DESCRIPTION: Mapping from TED speaker IDs to Find a Grave grave IDs
     #PREFIX: https://www.ted.com/speakers/
     #TARGET: http://www.findagrave.com/cgi-bin/fg.cgi?page=gr&GRid=
+    #TARGETSET: http://www.wikidata.org/entity/Q63056
 
     viktor_e_frankl|Q154723|14540087
     jimmy_carter|Q23685|6734

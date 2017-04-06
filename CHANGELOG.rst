@@ -1,9 +1,10 @@
 History
 =======
 
-0.0.8
+0.0.8 (2017-04-06)
 ------------------
--  Add 'json' output format (JSKOS Concept Mappings)
+-  Add 'json' output format (JSKOS Concept Mappings, .ndjson)
+-  Include source and target concept scheme URI if available
 
 0.0.7 (2017-01-17)
 ------------------

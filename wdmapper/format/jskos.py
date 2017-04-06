@@ -30,11 +30,14 @@ class Writer(LinkWriter):
         fromSet = [self.expand_link(link, 'prefix')]
         toSet = [self.expand_link(link, 'target')]
 
-        # TODO: additional metadata: fromScheme, toScheme
-
         jskos = {
             'type': [self.mapping_type()],
             'from': {'memberSet': fromSet},
-            'to': {'memberSet': toSet}
+            'to': {'memberSet': toSet},
         }
+        if self.meta['sourceset']:
+            jskos['fromScheme'] = {'uri':self.meta['sourceset']}
+        if self.meta['targetset']:
+            jskos['toScheme'] = {'uri':self.meta['targetset']}
+
         self.print(json.dumps(jskos, self.stream, sort_keys=True))

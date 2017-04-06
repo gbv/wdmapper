@@ -33,17 +33,23 @@ def get_property(p, endpoint, language='en'):
         where = '?p rdfs:label ?l . FILTER (str(?l) = %s)' % label
 
     query = """\
-            SELECT DISTINCT ?p ?label ?template ?pattern ?type ?kos WHERE {{
+            SELECT DISTINCT ?p ?label ?template ?pattern ?type (SAMPLE(?kos) AS ?scheme) WHERE {{
                 {0} .
                 ?p a wikibase:Property .
                 ?p wikibase:propertyType ?type .
                 OPTIONAL {{ ?p wdt:P1630 ?template }}
                 OPTIONAL {{ ?p wdt:P1793 ?pattern }}
+                OPTIONAL {{
+                  {{ ?p wdt:P1629 ?kos }}
+                  UNION
+                  {{ ?kos wdt:P1687 ?p }}
+                }}
                 SERVICE wikibase:label {{
                     bd:serviceParam wikibase:language "{1}" .
                     ?p rdfs:label ?label .
                 }}
-            }}""".format(where, language)
+            }} GROUP BY ?p ?label ?template ?pattern ?type
+    """.format(where, language)
 
     properties = []
     for row in endpoint.query(query):

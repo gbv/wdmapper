@@ -13,7 +13,7 @@ from .format import beacon, csv, ntriples, jskos
 from . import wikidata
 from .sparql import SparqlEndpoint
 
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 """Version number of module wdmapper."""
 
 commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync', 'help']
@@ -47,15 +47,6 @@ def _get_links(args):
 
 def _get_links_header(args):
 
-    # build meta fields
-    meta = {
-        'name': '{target[label]}',
-        'description': 'Mapping from {source[label]}s to {target[label]}s',
-        'prefix': '{source[template]}',
-        'target': '{target[template]}',
-        'relation': '{relation}'
-    }
-
     props = {}
     for name in ['source', 'target', 'relation']:
         if getattr(args, name):
@@ -64,11 +55,25 @@ def _get_links_header(args):
     # direct links
     if 'target' in props and 'source' not in props:
         props['source'] = {'template': 'http://www.wikidata.org/entity/',
-                           'label': 'Wikidata ID'}
+                           'label': 'Wikidata ID',
+                           'scheme': 'http://www.wikidata.org/entity/Q2013'}
+
+    # build meta fields
+    meta = {
+        'name': '{target[label]}',
+        'description': 'Mapping from {source[label]}s to {target[label]}s',
+        'prefix': '{source[template]}',
+        'target': '{target[template]}',
+        'sourceset': '{source[scheme]}',
+        'targetset': '{target[scheme]}',
+        'relation': '{relation}',
+    }
 
     for f in meta:
         try:
             meta[f] = meta[f].format(**props)
+            if meta[f] == 'None':
+                meta[f] = None
         except KeyError:
             meta[f] = None
 

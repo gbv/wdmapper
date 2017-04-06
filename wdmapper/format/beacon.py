@@ -20,7 +20,7 @@ else:
 
 
 meta_fields = ['name', 'description', 'prefix', 'target',
-               'creator', 'contact', 'homepage', 'feed', 'timestamp', 'update'
+               'creator', 'contact', 'homepage', 'feed', 'timestamp', 'update',
                'sourceset', 'targetset', 'institution',
                'relation', 'message', 'annotation']
 
