@@ -28,6 +28,7 @@ def test_reader():
 
     for string, expect in tests.items():
         reader = beacon.Reader(io.StringIO(string))
-        meta, links = reader.read()
-        assert meta == expect[0]
+        links = reader.start()
+        links = [l for l in reader.links() if l]
+        assert reader.meta == expect[0]
         assert list(links) == expect[1]

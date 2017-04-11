@@ -3,7 +3,8 @@
 
 from __future__ import unicode_literals, print_function
 import json
-from ..writer import LinkWriter
+
+from .base import LinkWriter
 
 name = 'jskos'
 extension = '.ndjson'

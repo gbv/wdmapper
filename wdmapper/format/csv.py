@@ -7,16 +7,15 @@ import csv
 import json
 import sys
 
-from ..writer import LinkWriter
+from .base import LinkReader, LinkWriter
+
 from ..link import Link
 from ..exceptions import WdmapperError
 
 CSV_FIELDS = ['source', 'target', 'annotation']
 
 name = 'csv'
-
 extension = '.csv'
-"""extension of CSV files."""
 
 PY3 = sys.version_info[0] == 3
 
@@ -32,30 +31,30 @@ def _unicode_csv_reader(unicode_csv_data, **kwargs):
         yield [unicode(cell, 'utf-8') for cell in row]
 
 
-class Reader:
+class Reader(LinkReader):
     """Read Links in CSV format."""
 
-    def __init__(self, stream, header=True):
-        self.stream = stream
-        self.header = header
-
-    def links(self):
+    def start(self):
         stream = iter(self.stream.readline, '')  # support streaming input
 
         if PY3:
-            csv_reader = csv.reader(stream, skipinitialspace=True)
+            self.csv_reader = csv.reader(stream, skipinitialspace=True)
         else:
-            csv_reader = _unicode_csv_reader(stream, skipinitialspace=True)
+            self.csv_reader = _unicode_csv_reader(stream, skipinitialspace=True)
 
-        header_row = None if self.header else CSV_FIELDS
-        line = 0
+        self.header_row = None if self.header else CSV_FIELDS
+        self.line = 0
 
-        for row in csv_reader:
-            line = line + 1
-            if header_row:
+    def links(self):
+        return [l for l in self.next() if l]
+
+    def next(self):
+        for row in self.csv_reader:
+            self.line = self.line + 1
+            if self.header_row:
                 # TODO: simplify this
                 mapping = []
-                mapping = {k: v for k, v in zip(header_row, row) if v != ''}
+                mapping = {k: v for k, v in zip(self.header_row, row) if v != ''}
                 try:
                     try:
                         link = Link(source=mapping['source'])
@@ -71,7 +70,7 @@ class Reader:
                 except ValueError:
                     pass
             else:
-                header_row = row
+                self.header_row = row
 
 
 class Writer(LinkWriter):

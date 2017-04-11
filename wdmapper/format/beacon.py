@@ -8,7 +8,8 @@ from itertools import chain
 import sys
 import re
 
-from ..writer import LinkWriter
+from .base import LinkReader, LinkWriter, DeltaWriter
+
 from ..link import Link
 from ..exceptions import WdmapperError
 
@@ -25,20 +26,12 @@ meta_fields = ['name', 'description', 'prefix', 'target',
                'relation', 'message', 'annotation']
 
 name = 'beacon'
-
 extension = '.txt'
-"""extension of BEACON files."""
 
 
-class Reader(object):
+class Reader(LinkReader):
 
-    def __init__(self, stream, header=True):
-        self.stream = stream
-        self.meta = {}
-
-    def read(self):
-        """Return meta fields and link token generator."""
-
+    def start(self):
         stream = iter(self.stream.readline, '')  # support streaming input
 
         # read meta lines
@@ -52,9 +45,7 @@ class Reader(object):
                 self.stream = chain([line], stream)  # push back
                 break
 
-        return (self.meta, [l for l in self.links() if l])
-
-    def links(self):
+    def next(self):
         """Read link lines and generate links from link tokens."""
         for line in self.stream:
             line = line.strip()
@@ -69,7 +60,7 @@ class Reader(object):
                 yield Link(source=token[0], annotation=token[1], target=token[2])
 
 
-class Writer(LinkWriter):
+class Writer(LinkWriter, DeltaWriter):
 
     def __init__(self, stream, header=True):
         self.stream = stream
@@ -108,3 +99,9 @@ class Writer(LinkWriter):
             if len(token) == 2 and token[0] == token[1]:  # source == target
                 token.pop()
             self.print('|'.join(token))
+
+    def write_delta(self, delta):
+        # TODO: better output format, see https://github.com/gbv/wdmapper/issues/25
+        for op, link in delta:
+            self.stream.write(op + ' ')
+            self.write_link(link)

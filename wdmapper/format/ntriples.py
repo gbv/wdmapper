@@ -2,14 +2,14 @@
 """RDF/NTriples writer."""
 
 from __future__ import unicode_literals, print_function
-from ..writer import LinkWriter
+from .base import LinkWriter, DeltaWriter
 from ..exceptions import WdmapperError
 
 name = 'nt'
 extension = '.nt'
 
 
-class Writer(LinkWriter):
+class Writer(LinkWriter, DeltaWriter):
 
     def init(self, meta):
         self.meta = meta
@@ -40,7 +40,7 @@ class Writer(LinkWriter):
         triple = map(lambda uri: '<%s>' % uri, [s,p,o])
         print(' '.join(triple), '.', file=self.stream)
 
-    def write_delta(self, delta):  # TODO: move duplicated code to base class
+    def write_delta(self, delta):
         for op, link in delta:
             self.stream.write(op + ' ')
             self.write_link(link)

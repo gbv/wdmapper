@@ -45,6 +45,8 @@ def parse_args(argv):
                         help='Wikidata SPARQL endpoint')
     parser.add_argument('-n', '--dry-run', dest='dry', action='store_true',
                         help='don\'t perform any edits on Wikidata')
+    parser.add_argument('-c', '--local', metavar='IN',
+                        help='read mappings from local file instead of Wikidata')
     parser.add_argument('-d', '--debug', action='store_true',
                         help='debug mode')
     parser.add_argument('-V', '--version', action='store_true',
@@ -59,16 +61,16 @@ def parse_args(argv):
 
     args = parser.parse_args(argv)
 
-    if args.command == 'help':
+    command = args.command
+    del args.command
+
+    if command == 'help' or argv == []:
         parser.print_help()
         sys.exit(0)
 
     if args.version:
         print('wdmapper %s' % wdmapper.__version__)
         sys.exit(0)
-
-    command = args.command
-    del args.command
 
     if args.target is None:
         if command is not None and command not in wdmapper.commands:

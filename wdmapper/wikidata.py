@@ -72,7 +72,7 @@ def get_links(source, target, endpoint, sort=False, limit=0, language='en', type
     if language is None:
         language = 'en'
 
-    if source is None:
+    if not source or not hasattr(source,'id'):
         # TODO: wikibase:label service will use QID as default
         # better use empty string instead!
         query = """\

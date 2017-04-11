@@ -9,9 +9,11 @@ import codecs
 import itertools
 
 from .exceptions import WdmapperError, ArgumentError
-from .format import beacon, csv, ntriples, jskos
 from . import wikidata
 from .sparql import SparqlEndpoint
+from .property import Property
+
+from .format import readers, writers, guessFormat
 
 __version__ = '0.0.8'
 """Version number of module wdmapper."""
@@ -19,20 +21,7 @@ __version__ = '0.0.8'
 commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync', 'help']
 """List if available commands."""
 
-formats = {f.name: f for f in [csv, beacon, ntriples, jskos]}
-"""Dict of input/output format names mapped to corresponding modules."""
-
 PY3 = sys.version_info[0] == 3
-
-
-def readers():
-    return dict((f, formats[f]) for f in formats
-                if hasattr(formats[f],'Reader'))
-
-
-def writers():
-    return dict((f, formats[f]) for f in formats
-                if hasattr(formats[f],'Writer'))
 
 
 def _get_links(args):
@@ -81,8 +70,11 @@ def _get_links_header(args):
 
 
 def _get_reader(args):
+    reader = readers[args.format](args.input, header=not args.no_header)
+    reader.start()
+
     if args.format == 'beacon':
-        meta, reader = beacon.Reader(args.input).read()
+        meta = reader.meta 
 
         if 'target' in meta:
 
@@ -95,8 +87,12 @@ def _get_reader(args):
         if 'prefix' in meta:
             source = meta['prefix']  # TODO: rename
             if source == 'http://www.wikidata.org/entity/':
-                source = {'template': 'http://www.wikidata.org/entity/',
-                          'label': 'Wikidata ID'}
+                source = Property({
+                            'template': 'http://www.wikidata.org/entity/',
+                            'label': 'Wikidata ID',
+                            'id': '-',
+                            'type': 'http://wikiba.se/ontology#ExternalId'
+                        })
             else:
                 source = wikidata.get_property(source, language=args.language, endpoint=args.endpoint)
                 if args.source and args.source.uri != source.uri:
@@ -105,13 +101,14 @@ def _get_reader(args):
             args.source = source
 
     elif args.format == 'csv':
-        reader = csv.Reader(args.input, header=not args.no_header).links()
         meta = _get_links_header(args)
+    
+    links = reader.links()
 
     if args.limit:
-        reader = itertools.islice(reader, args.limit)
+        links = itertools.islice(links, args.limit)
 
-    return meta, reader
+    return meta, links
 
 
 def _get_diff(args):
@@ -158,19 +155,15 @@ def _check_args(command, args_dict):
 
     if args.format:
         args.format = args.format.lower()
-        allow = readers().keys()
+        allow = readers.keys()
         if args.format not in allow:
             raise ArgumentError('input format', allow=allow)
-    else:
-        args.format = 'csv'
 
     if args.to:
         args.to = args.to.lower()
-        allow = writers().keys()
+        allow = writers.keys()
         if args.to not in allow:
             raise ArgumentError('output format', allow=allow)
-    else:
-        args.to = 'beacon'
 
     if command == 'diff' and args.limit:
         args.sort = True
@@ -203,32 +196,26 @@ def wdmapper(command=None, **args):
     # open input file or stream
     if (args.input and args.input != '-'):
         if not args.format:
-            name, ext = os.path.splitext(args.input)
-            try:
-                args.format = [f for f in readers().values()
-                               if f.extension == ext][0].name
-            except IndexError:
-                pass
+            args.format = guessFormat(args.input, readers.keys())
         args.input = io.open(args.input, 'r', encoding='utf8')
     elif sys.stdin.isatty() or PY3:
         args.input = sys.stdin
     else:
         args.input = codecs.getreader('utf-8')(sys.stdin)
+    if not args.format:
+        args.format = 'csv'
 
     # open output file or stream
     if (args.output and args.output != '-'):
         if not args.to:
-            name, ext = os.path.splitext(args.output)
-            try:
-                args.to = [f for f in writers().values()
-                           if f.extension == ext][0].name
-            except IndexError:
-                pass
+            args.to = guessFormat(args.output, writers.keys())
         args.output = io.open(args.output, 'w', encoding='utf8')
     elif sys.stdout.isatty() or PY3:
         args.output = sys.stdout
     else:
         args.output = codecs.getwriter('utf-8')(sys.stdout)
+    if not args.to:
+        args.to = 'beacon'
 
     # look up properties
     for which in ['source', 'target']:
@@ -253,7 +240,7 @@ def wdmapper(command=None, **args):
     # initialize writer
     if not args.writer:
         header = (command == 'about' or not args.no_header)
-        args.writer = writers()[args.to].Writer(args.output, header=header)
+        args.writer = writers[args.to](args.output, header=header)
 
     # emit output
     if command in ['get', 'head', 'convert']:
