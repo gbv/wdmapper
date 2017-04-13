@@ -11,11 +11,10 @@ syntax is
 
 where ``COMMAND`` is one of the wdmapper :doc:`commands <commands>` and
 ``SOURCE`` and ``TARGET`` are Wikidata :doc:`properties <properties>`.  A list
-of commands and :doc:`options <options>` is shown with command ``help`` or with
-option ``-h`` or ``--help``:
+of commands and :doc:`options <options>` is shown with option ``-h`` or
+``--help``:
 
 .. code:: shell
 
-    $ wdmapper help
-    $ wdmapper -h
+    $ wdmapper --help
 

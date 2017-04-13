@@ -18,7 +18,7 @@ from .format import readers, writers, guessFormat
 __version__ = '0.0.8'
 """Version number of module wdmapper."""
 
-commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync', 'help']
+commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync']
 """List if available commands."""
 
 PY3 = sys.version_info[0] == 3

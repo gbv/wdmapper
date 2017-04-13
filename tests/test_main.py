@@ -4,9 +4,9 @@ from re import match
 from wdmapper.cli import run
 
 
-def test_help_as_command(capsys):
+def test_help_by_default(capsys):
     with pytest.raises(SystemExit):
-        run('help')
+        run()
     out, err = capsys.readouterr()
     assert out.startswith('usage: ')
 

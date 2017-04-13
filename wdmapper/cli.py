@@ -64,7 +64,7 @@ def parse_args(argv):
     command = args.command
     del args.command
 
-    if command == 'help' or argv == []:
+    if argv == []:
         parser.print_help()
         sys.exit(0)
 

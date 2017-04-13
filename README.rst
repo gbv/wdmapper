@@ -23,8 +23,8 @@ Description
 
 **wdmapper** is a command line application and Python library to manage
 mappings between authority files in Wikidata. The current draft is limited to
-simple 1-to-1 mapping that only exist for concepts obvious unique identity such
-as people.
+simple 1-to-1 mapping that only exist for concepts of obviously unique identity
+such as people.
 
 Installation
 ~~~~~~~~~~~~
@@ -36,19 +36,21 @@ Installation
 Usage
 ~~~~~
 
-Run ``wdmapper help``, ``wdmapper -h`` or ``wdmapper --help`` for basic help.
 The general calling syntax is
 
 .. code:: shell
 
     wdmapper [OPTIONS] COMMAND [SOURCE] TARGET
 
-where ``COMMAND`` is one of the wdmapper commands and ``SOURCE`` and ``TARGET``
-are Wikidata properties. 
+where ``COMMAND`` is a wdmapper command, ``TARGET`` is a Wikidata property, and
+``SOURCE`` is an optional Wikidata property for indirect links. ``TARGET`` can
+also be omitted when read from a BEACON file. Depending on the command wdmapper
+reads input mappings from a file or standard input and/or Wikidata and writes
+them to standard output or a file.
 
-Depending on the command the script reads input mappings from a file or
-standard input, and mappings from Wikidata. Arguments SOURCE and TARGET are
-required for CSV input format but not for BEACON input format.
+Run ``wdmapper`` without command line arguments (or with option ``--help|-h``)
+for a list of command line input, and mappings from Wikidata.  options. 
+
 
 License
 ~~~~~~~
