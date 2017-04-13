@@ -178,33 +178,3 @@ def _link_from_wdsparql_row(row):
         return Link(row['source'], row['target'], qid)
     else:
         return Link(qid, row['target'], row['annotation'])
-
-
-def setup_pywikibot():
-    """initialize pywikibot connected to wikidata
-
-    File ``user-config.py`` (required by pywikibot) is created
-    automatically, if needed.
-    """
-
-    global pywikibot
-    global site
-    global repo
-    try:
-        import pywikibot
-    except RuntimeError as e:
-        # create user-config.py if needed
-        if os.path.exists('user-config.py'):
-            raise
-        # print('user-config.py created')
-        file = open('user-config.py', 'w')
-        file.write("\n".join([
-            "mylang = 'wikidata'",
-            "family = 'wikidata'",
-            "# usernames['wikidata']['wikidata'] = u'YOUR-USERNAME'",
-            "console_encoding = 'utf-8'", ""
-        ]))
-        file.close()
-        import pywikibot
-        site = pywikibot.Site()
-        repo = site.data_repository()

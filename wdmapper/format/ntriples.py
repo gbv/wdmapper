@@ -11,9 +11,6 @@ extension = '.nt'
 
 class Writer(LinkWriter, DeltaWriter):
 
-    def init(self, meta):
-        self.meta = meta
-
     def write_link(self, link):
 
         # TODO: template replacing code may better be put elsewhere

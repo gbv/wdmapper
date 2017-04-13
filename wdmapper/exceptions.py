@@ -21,7 +21,7 @@ class ArgumentError(WdmapperError):
 
     def message(self):
         if self.allow:
-            return self.name + ' must be one of: ' + ', '.join(self.allow)
+            return self.name + ' must be one of: ' + ', '.join(sorted(self.allow))
         elif self.got is not None:
             return self.name + 'is is missing'
         else:

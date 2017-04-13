@@ -56,6 +56,8 @@ def _get_links_header(args):
         'sourceset': '{source[scheme]}',
         'targetset': '{target[scheme]}',
         'relation': '{relation}',
+        'sourceproperty': '{source[id]}',
+        'targetproperty': '{target[id]}'
     }
 
     for f in meta:
@@ -74,7 +76,7 @@ def _get_reader(args):
     reader.start()
 
     if args.format == 'beacon':
-        meta = reader.meta 
+        meta = reader.meta
 
         if 'target' in meta:
 
@@ -88,11 +90,11 @@ def _get_reader(args):
             source = meta['prefix']  # TODO: rename
             if source == 'http://www.wikidata.org/entity/':
                 source = Property({
-                            'template': 'http://www.wikidata.org/entity/',
-                            'label': 'Wikidata ID',
-                            'id': '-',
-                            'type': 'http://wikiba.se/ontology#ExternalId'
-                        })
+                    'template': 'http://www.wikidata.org/entity/',
+                    'label': 'Wikidata ID',
+                    'id': '-',
+                    'type': 'http://wikiba.se/ontology#ExternalId'
+                })
             else:
                 source = wikidata.get_property(source, language=args.language, endpoint=args.endpoint)
                 if args.source and args.source.uri != source.uri:
@@ -102,7 +104,7 @@ def _get_reader(args):
 
     elif args.format == 'csv':
         meta = _get_links_header(args)
-    
+
     links = reader.links()
 
     if args.limit:
@@ -244,11 +246,11 @@ def wdmapper(command=None, **args):
 
     # emit output
     if command in ['get', 'head', 'convert']:
-        args.writer.init(meta)
+        args.writer.start(meta)
         for link in links:
             args.writer.write_link(link)
     elif command in ['diff', 'check']:
-        args.writer.init(meta)
+        args.writer.start(meta)
         for delta in deltas:
             args.writer.write_delta(delta)
     else:

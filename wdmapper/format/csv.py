@@ -100,7 +100,7 @@ class Writer(LinkWriter):
         self.meta = {}
         self.initialized = header is False
 
-    def init(self, meta):
+    def start(self, meta):
         if self.initialized:
             return
         self.initialized = True
