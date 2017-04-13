@@ -1,6 +1,11 @@
 History
 =======
 
+0.0.9 (2017-04-13)
+------------------
+-  Add 'quicks' output format for deltas to be used in QuickStatements tool
+-  Remove 'help' command
+
 0.0.8 (2017-04-06)
 ------------------
 -  Add 'json' output format (JSKOS Concept Mappings, .ndjson)

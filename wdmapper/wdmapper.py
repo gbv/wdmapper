@@ -15,7 +15,7 @@ from .property import Property
 
 from .format import readers, writers, guessFormat
 
-__version__ = '0.0.8'
+__version__ = '0.0.9'
 """Version number of module wdmapper."""
 
 commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync']
