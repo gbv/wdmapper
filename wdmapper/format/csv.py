@@ -94,23 +94,14 @@ class Writer(LinkWriter):
                 s = json.dumps(s).replace('\\"','""')
             return s
 
-    def __init__(self, stream, header=True):
-        self.stream = stream
-        self.header = header
-        self.meta = {}
-        self.initialized = header is False
-
     def start(self, meta):
-        if self.initialized:
-            return
-        self.initialized = True
+        self.started = True
         if self.header:
             self.write_link(Link('source', 'target', 'annotation'))
 
     def write_link(self, link):
-        if not self.initialized:
-            raise WdmapperError(str(self.__class__) +
-                                " instance not initialized!")
+        if not self.started:
+            raise WdmapperError(str(self.__class__) + " instance not started!")
 
         row = []
         for key in CSV_FIELDS:

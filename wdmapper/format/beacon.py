@@ -62,15 +62,12 @@ class Reader(LinkReader):
 
 class Writer(LinkWriter, DeltaWriter):
 
-    def __init__(self, stream, header=True):
-        self.stream = stream
-        self.meta = {}
-        self.initialized = header is False
-
     def start(self, meta):
-        if self.initialized:
+        if self.started:
             return
-        self.initialized = True
+        self.started = True
+        if not self.header:
+            return
         self.print('#FORMAT: BEACON')
         for key in meta_fields:
             if key in meta and meta[key] is not None:
@@ -85,9 +82,8 @@ class Writer(LinkWriter, DeltaWriter):
         self.print('')
 
     def write_link(self, link):
-        if not self.initialized:
-            raise WdmapperError(str(self.__class__) +
-                                " instance not initialized!")
+        if not self.started:
+            raise WdmapperError(str(self.__class__) + " instance not started!")
 
         token = ['' if s is None else s for s in
                  [link.source, link.annotation, link.target]]
@@ -101,7 +97,6 @@ class Writer(LinkWriter, DeltaWriter):
             self.print('|'.join(token))
 
     def write_delta(self, delta):
-        # TODO: better output format, see https://github.com/gbv/wdmapper/issues/25
         for op, link in delta:
             self.stream.write(op + ' ')
             self.write_link(link)

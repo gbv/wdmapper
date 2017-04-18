@@ -12,9 +12,6 @@ extension = '.ndjson'
 
 class Writer(LinkWriter):
 
-    def init(self, meta):
-        self.meta = meta
-
     # TODO: DUPLCATED template replacing code may better be put elsewhere
     def expand_link(self, link, field):
         if field in self.meta and self.meta[field]:
