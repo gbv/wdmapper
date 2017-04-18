@@ -32,7 +32,9 @@ class Writer:
     def __init__(self, stream, header=True):
         """Create a new writer."""
         self.stream = stream
+        self.header = header
         self.meta = {}
+        self.started = False
 
     def start(self, meta):
         """Start writing with given metadata."""

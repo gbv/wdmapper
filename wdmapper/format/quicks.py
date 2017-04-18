@@ -6,7 +6,7 @@ See https://tools.wmflabs.org/quickstatements/.
 """
 
 from __future__ import unicode_literals, print_function
-
+import re
 from .base import LinkReader, LinkWriter, DeltaWriter
 
 name = 'quicks'
@@ -14,30 +14,42 @@ name = 'quicks'
 
 class Writer(DeltaWriter):
 
-    def edit_link(self, link, command=''):
-        if self.meta['sourceproperty']:  # indirect link
-            qid = command + link.annotation
-            prop = self.meta['sourceproperty']
-            self.write_command((qid, prop, '"' + link.source + '"'))
-            prop = self.meta['targetproperty']
-            self.write_command((qid, prop, '"' + link.target + '"'))
+    def write_edit(self, link, prefix=''):
+        if self.meta['sourceproperty']:
+            qid = prefix + link.annotation
+            self.statement(qid, self.meta['sourceproperty'], link.source)
+            self.statement(qid, self.meta['targetproperty'], link.target)
         else:
-            qid = command + link.source
-            prop = self.meta['targetproperty']
-            self.write_command((qid, prop, '"' + link.target + '"'))
+            qid = prefix + link.source
+            self.statement(qid, self.meta['targetproperty'], link.target)
 
-    def write_command(self, parts):
-        self.print('\t'.join(parts))
+    def statement(self, qid, prop, value):
+        self.print('%s\t%s\t"%s"' % (qid, prop, value))
+
+    def skip(self, link):
+        self.write_edit(link, '# ')
 
     def write_delta(self, delta):
         for op, link in delta:
+            
+            if link.source is None or link.target is None:
+                # TODO: skip incomplete link
+                continue
+
+            if self.meta['sourceproperty']:
+                if not re.match('^Q[1-9][0-9]+$', link.annotation):
+                    self.skip(link)
+                    continue
+            else:
+                if not re.match('^Q[1-9][0-9]+$', link.source):
+                    self.skip(link)
+                    continue
+
             if op == '=':
                 continue
             elif op == '~':
-                if self.meta['sourceproperty']:  # indirect link
-                    self.print("# skipping indirect link %s -> Q? -> %s" % (link.source, link.target))
-                continue
+                self.skip(link)
             elif op == '+':
-                self.edit_link(link,'')
+                self.write_edit(link,'')
             elif op == '-':
-                self.edit_link(link,'-')
+                self.write_edit(link,'-')

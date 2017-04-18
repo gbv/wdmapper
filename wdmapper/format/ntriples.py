@@ -39,5 +39,10 @@ class Writer(LinkWriter, DeltaWriter):
 
     def write_delta(self, delta):
         for op, link in delta:
+
+            # ignore incomplete links
+            if link.source is None or link.target is None:
+                continue
+
             self.stream.write(op + ' ')
             self.write_link(link)
