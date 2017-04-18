@@ -164,6 +164,8 @@ def _check_args(command, args_dict):
     if args.to:
         args.to = args.to.lower()
         allow = writers.keys()
+        if command in ['diff','check']:
+            allow = [x for x in allow if hasattr(writers[x], 'write_delta')]
         if args.to not in allow:
             raise ArgumentError('output format', allow=allow)
 
