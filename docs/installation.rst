@@ -9,6 +9,9 @@ command line with `pip <https://pip.pypa.io/>`__:
     $ pip install wdmapper              # either install global
     $ pip install wdmapper --user       # or install to ~/.local
 
+Add option `--user` to install as normal user to `~/.local` and option
+`--upgrade` to update an already installed version.
+
 The latest developer version can be retrieved from the git repository:
 
 .. code:: shell

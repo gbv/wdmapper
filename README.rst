@@ -33,6 +33,9 @@ Installation
 
     $ pip install wdmapper
 
+Add option `--user` to install as non-root and option `--upgrade` to update an
+already installed version.
+
 Usage
 ~~~~~
 
