@@ -60,8 +60,7 @@ def get_property(p, endpoint, language='en'):
 
     if len(properties) > 1:
         raise WdmapperError('multiple properties:\n' + '\n'.join(
-                            ['{label} ({id})'.format(**p.__dict__)
-                             for p in properties]))
+                            [str(p) for p in properties]))
 
     return properties[0]
 

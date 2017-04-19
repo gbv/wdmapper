@@ -31,7 +31,7 @@ def parse_args(argv):
     parser.add_argument('-l', '--limit', metavar='N', type=int, default=0,
                         help='maximum number of mappings to process')
     parser.add_argument('-H', '--no-header', dest='no_header', action='store_true',
-                        help='read/write CSV/BEACON without header')
+                        help='read/write without header')
     parser.add_argument('-C', '--no-cache', dest='cache',
                         action='store_false', default=True,
                         help='disable caching')

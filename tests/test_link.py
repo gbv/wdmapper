@@ -22,14 +22,28 @@ def test_empty_string():
     assert l.source is not None
     assert l.target is None
     assert bool(l) is True
+    assert l.tokens() == ('foo', None, None)
+
     l.source = None
     assert l.source is None
     assert bool(l) is False
+    assert l.tokens() == (None, None, None)
+
+
+def test_access():
+    l = Link('a', 'b', 'c')
+    assert l.source is l['source']
 
 
 def test_exception():
     with pytest.raises(ValueError):
         Link('foo','bar').target = []
+
+
+def test_expand():
+    l = Link('a', 'b', 'c')
+    assert l.expand('source', 'x:$1') == 'x:a'
+    assert l.expand('target', 'x:') == 'x:b'
 
 
 def test_repr():

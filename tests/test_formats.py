@@ -16,7 +16,7 @@ def test_readers():
 
 
 def test_writers():
-    names = ['beacon','csv', 'jskos', 'nt', 'quicks']
+    names = ['beacon','csv','jskos','markdown','nt','quicks']
     assert sorted(writers.keys()) == names
     for name in names:
         assert issubclass(type(writers[name]), type(LinkWriter))

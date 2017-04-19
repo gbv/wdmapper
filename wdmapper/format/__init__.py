@@ -18,11 +18,11 @@ Usage:
 
 """
 
-from . import beacon, csv, ntriples, jskos, quicks
+from . import beacon, csv, ntriples, jskos, quicks, markdown
 
 import os
 
-formats = {f.name: f for f in [csv, beacon, ntriples, jskos, quicks]}
+formats = {f.name: f for f in [csv, beacon, ntriples, jskos, quicks, markdown]}
 
 readers = {f: formats[f].Reader for f in formats if hasattr(formats[f],'Reader')}
 writers = {f: formats[f].Writer for f in formats if hasattr(formats[f],'Writer')}

@@ -12,21 +12,15 @@ extension = '.ndjson'
 
 class Writer(LinkWriter):
 
-    # TODO: DUPLCATED template replacing code may better be put elsewhere
-    def expand_link(self, link, field):
+    def expand_link(self, link, token, field):
         if field in self.meta and self.meta[field]:
-            prefix = self.meta['prefix']
-            if '$1' in prefix:
-                uri = prefix.replace('$1', link.source)
-            else:
-                uri = prefix + link.source
-            return {'uri': uri}
+            return {'uri': link.expand(token, self.meta[field])}
         else:
-            return {'notation': link.source}
+            return {'notation': link[token]}
 
     def write_link(self, link):
-        fromSet = [self.expand_link(link, 'prefix')]
-        toSet = [self.expand_link(link, 'target')]
+        fromSet = [self.expand_link(link, 'source', 'prefix')]
+        toSet = [self.expand_link(link, 'target', 'target')]
 
         jskos = {
             'type': [self.mapping_type()],

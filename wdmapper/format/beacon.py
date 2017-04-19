@@ -82,11 +82,8 @@ class Writer(LinkWriter, DeltaWriter):
         self.print('')
 
     def write_link(self, link):
-        if not self.started:
-            raise WdmapperError(str(self.__class__) + " instance not started!")
-
-        token = ['' if s is None else s for s in
-                 [link.source, link.annotation, link.target]]
+        token = ['' if s is None else s for s in link.tokens()]
+        token = [token[0], token[2], token[1]]
 
         if token[2] in ['', token[1]]:  # target missing or equal to source
             token.pop()

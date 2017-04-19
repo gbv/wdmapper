@@ -55,12 +55,11 @@ class Property(object):
         return getattr(self, key)
 
     def __repr__(self):
-        s = "{label} ({id})\n<{uri}>\n{type}\n".format(**self.__dict__)
+        s = "{label} ({id})\n  <{uri}> {type}".format(**self.__dict__)
         if self.template:
-            s += self.template
-        s += "\n"
+            s += '\n  %s' % self.template
         if self.pattern:
-            s += self.pattern
+            s += '\n  %s' % self.pattern
         return s
 
     @staticmethod

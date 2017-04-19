@@ -31,7 +31,6 @@ class Writer(DeltaWriter):
 
     def write_delta(self, delta):
         for op, link in delta:
-            
             if link.source is None or link.target is None:
                 # TODO: skip incomplete link
                 continue

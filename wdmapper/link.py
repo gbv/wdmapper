@@ -74,6 +74,12 @@ class Link(object):
     def tokens(self):
         return (self._source, self._target, self._annotation)
 
+    def expand(self, token, template):
+        if '$1' in template:
+            return template.replace('$1', self[token])
+        else:
+            return template + self[token]
+
     def __bool__(self):
         return not all(True if t is None else False for t in self.tokens())
 
@@ -89,6 +95,14 @@ class Link(object):
         if self._hash is None:
             self._hash = hash(self.tokens())
         return self._hash
+
+    def __iter__(self):
+        yield 'source', self._source
+        yield 'target', self._target
+        yield 'annotation', self._annotation
+
+    def __getitem__(self, key):
+        return dict(self)[key]
 
     def __repr__(self):
         args = [repr(self._source)]
