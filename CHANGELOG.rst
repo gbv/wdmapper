@@ -1,6 +1,10 @@
 History
 =======
 
+0.0.10 (2017-04-19)
+-------------------
+-  Extend output formats
+
 0.0.9 (2017-04-13)
 ------------------
 -  Add 'quicks' output format for deltas to be used in QuickStatements tool
