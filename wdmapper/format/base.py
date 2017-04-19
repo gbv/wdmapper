@@ -42,6 +42,7 @@ class Writer:
 
     def print(self, s):
         """Helper method to print a string without buffering."""
+
         print(s, file=self.stream)
         try:
             self.stream.flush()

@@ -5,7 +5,6 @@ import pytest
 import io
 import sys
 import codecs
-import functools
 
 from wdmapper.cli import run
 
@@ -47,7 +46,15 @@ def test_csv_to_jskos(capsys):
     out, err = capsys.readouterr()
     assert out == slurp('tests/simple.ndjson')
 
- 
+
+def test_write_formats(tmpdir):
+    formats = ['txt','ndjson']
+    for ext in formats:
+        outfile = str(tmpdir.join('tmp.' + ext))
+        run('convert', '-i', 'tests/simple.csv', '-o', outfile)
+        assert slurp(outfile) == slurp('tests/simple.' + ext)
+
+
 def test_unknown_format(capsys):
     with pytest.raises(SystemExit):
         run('-f', 'xxx')

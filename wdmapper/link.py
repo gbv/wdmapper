@@ -6,11 +6,7 @@ from __future__ import unicode_literals
 from functools import total_ordering
 import re
 import sys
-
-if sys.version_info[0] == 3:  # PY3
-    text_type = str
-else:
-    text_type = unicode
+import six
 
 
 @total_ordering
@@ -34,7 +30,7 @@ class Link(object):
     @staticmethod
     def whitespace_normalize(value):
         if value is not None:
-            if not isinstance(value, text_type):
+            if not isinstance(value, six.text_type):
                 raise ValueError('Link token must be Unicode string')
             value = re.sub('[\n\r\t ]+', ' ', value.strip('\n\r\t '))
             if value == '':

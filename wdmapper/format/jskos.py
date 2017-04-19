@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals, print_function
 import json
-
+import six
 from .base import LinkWriter
 
 name = 'jskos'
@@ -32,4 +32,4 @@ class Writer(LinkWriter):
         if self.meta['targetset']:
             jskos['toScheme'] = {'uri':self.meta['targetset']}
 
-        self.print(json.dumps(jskos, self.stream, sort_keys=True))
+        self.print(six.u(json.dumps(jskos, self.stream, sort_keys=True)))

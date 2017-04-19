@@ -7,17 +7,12 @@ import functools
 from itertools import chain
 import sys
 import re
+import six
 
 from .base import LinkReader, LinkWriter, DeltaWriter
 
 from ..link import Link
 from ..exceptions import WdmapperError
-
-PY3 = sys.version_info[0] == 3
-if PY3:
-    text_type = str
-else:
-    text_type = unicode
 
 
 meta_fields = ['name', 'description', 'prefix', 'target',
@@ -72,7 +67,7 @@ class Writer(LinkWriter, DeltaWriter):
         for key in meta_fields:
             if key in meta and meta[key] is not None:
                 value = meta[key]
-                if isinstance(value, text_type):
+                if isinstance(value, six.text_type):
                     value = [value]
                 for v in value:
                     if key.upper() in ['PREFIX', 'TARGET']:

@@ -7,6 +7,7 @@ import os
 import io
 import codecs
 import itertools
+import six
 
 from .exceptions import WdmapperError, ArgumentError
 from . import wikidata
@@ -20,8 +21,6 @@ __version__ = '0.0.10'
 
 commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync']
 """List if available commands."""
-
-PY3 = sys.version_info[0] == 3
 
 
 def _get_links(args):
@@ -202,7 +201,7 @@ def wdmapper(command=None, **args):
         if not args.format:
             args.format = guessFormat(args.input, readers.keys())
         args.input = io.open(args.input, 'r', encoding='utf8')
-    elif sys.stdin.isatty() or PY3:
+    elif sys.stdin.isatty() or six.PY3:
         args.input = sys.stdin
     else:
         args.input = codecs.getreader('utf-8')(sys.stdin)
@@ -214,7 +213,7 @@ def wdmapper(command=None, **args):
         if not args.to:
             args.to = guessFormat(args.output, writers.keys())
         args.output = io.open(args.output, 'w', encoding='utf8')
-    elif sys.stdout.isatty() or PY3:
+    elif sys.stdout.isatty() or six.PY3:
         args.output = sys.stdout
     else:
         args.output = codecs.getwriter('utf-8')(sys.stdout)

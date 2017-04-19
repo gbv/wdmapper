@@ -16,7 +16,7 @@ setup(
     license='MIT',
     url='http://github.com/gbv/wdmapper',
     packages=find_packages(),
-    install_requires=[],
+    install_requires=['six'],
     setup_requires=['pytest-runner'],
     tests_require=['pytest', 'pytest-pep8', 'pytest-cov'],
     download_url='https://github.com/gbv/wdmapper/tarball/' + version,

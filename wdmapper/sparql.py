@@ -5,12 +5,11 @@ from __future__ import unicode_literals
 import json
 import sys
 import textwrap
+import six
 
 from .exceptions import WdmapperError
 
-PY3 = sys.version_info[0] > 2
-
-if PY3:
+if six.PY3:
     from urllib.parse import quote
     from urllib.request import Request, HTTPError, URLError, urlopen
 else:
@@ -42,7 +41,7 @@ class SparqlEndpoint:
         except (URLError) as e:
             raise WdmapperError(e)
 
-        if PY3:
+        if six.PY3:
             res = res.decode('utf8')
 
         if res:

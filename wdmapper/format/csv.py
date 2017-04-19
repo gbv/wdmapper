@@ -6,6 +6,7 @@ from __future__ import unicode_literals, absolute_import, print_function
 import csv
 import json
 import sys
+import six
 
 from .base import LinkReader, LinkWriter
 
@@ -16,8 +17,6 @@ CSV_FIELDS = ['source', 'target', 'annotation']
 
 name = 'csv'
 extension = '.csv'
-
-PY3 = sys.version_info[0] == 3
 
 
 def _unicode_csv_reader(unicode_csv_data, **kwargs):
@@ -37,7 +36,7 @@ class Reader(LinkReader):
     def start(self):
         stream = iter(self.stream.readline, '')  # support streaming input
 
-        if PY3:
+        if six.PY3:
             self.csv_reader = csv.reader(stream, skipinitialspace=True)
         else:
             self.csv_reader = _unicode_csv_reader(stream, skipinitialspace=True)
