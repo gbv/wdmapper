@@ -17,8 +17,10 @@ class Writer(DeltaWriter):
     def write_edit(self, link, prefix=''):
         if self.meta['sourceproperty']:
             qid = prefix + link.annotation
-            self.statement(qid, self.meta['sourceproperty'], link.source)
-            self.statement(qid, self.meta['targetproperty'], link.target)
+            sourceprop = re.sub('.*/', '', self.meta['sourceproperty'])
+            targetprop = re.sub('.*/', '', self.meta['sourceproperty'])
+            self.statement(qid, sourceprop, link.source)
+            self.statement(qid, targetprop, link.target)
         else:
             qid = prefix + link.source
             self.statement(qid, self.meta['targetproperty'], link.target)

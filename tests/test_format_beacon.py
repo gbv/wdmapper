@@ -22,7 +22,7 @@ def test_reader():
         'foo|bar': ({},[Link(source='foo',annotation='bar')]),
         ' foo  ||\tbar ': ({},[Link(source='foo',target='bar')]),
         'foo|bar|doz|baz': ({},[Link('foo','doz',annotation='bar')]),
-        '#TARGET:  foo\nx': ({'target':'foo'},[Link('x')]),
+        '#TARGET:  foo\nx': ({'target':'foo$1'},[Link('x')]),
         'x\ny\nz': ({},[Link(s) for s in ['x','y','z']]),
     }
 

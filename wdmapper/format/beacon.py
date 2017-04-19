@@ -18,6 +18,7 @@ from ..exceptions import WdmapperError
 meta_fields = ['name', 'description', 'prefix', 'target',
                'creator', 'contact', 'homepage', 'feed', 'timestamp', 'update',
                'sourceset', 'targetset', 'institution',
+               'sourceproperty', 'targetproperty',
                'relation', 'message', 'annotation']
 
 name = 'beacon'
@@ -34,8 +35,16 @@ class Reader(LinkReader):
             if line[0] == '#':
                 key, value = line[1:].split(':',1)  # TODO: split at : or space or tab
                 key = key.strip()
+                value = value.strip()
                 if re.match('^[A-Z]+$', key):
-                    self.meta[key.lower()] = value.strip()
+                    key = key.lower()
+                    if key in ['prefix', 'target']:
+                        if '{ID}' in value:
+                            value = value.replace('{ID}','$1')
+                        else:
+                            value = value + '$1'
+                    self.meta[key] = value
+
             else:
                 self.stream = chain([line], stream)  # push back
                 break
@@ -78,15 +87,14 @@ class Writer(LinkWriter, DeltaWriter):
 
     def write_link(self, link):
         token = ['' if s is None else s for s in link.tokens()]
-        token = [token[0], token[2], token[1]]
+        token = [token[0], token[2], token[1]]  # source, annotation, target
 
-        if token[2] in ['', token[1]]:  # target missing or equal to source
+        if token[2] in ['', token[0]]:  # target missing or equal to source
             token.pop()
-
-        if token:
-            if len(token) == 2 and token[0] == token[1]:  # source == target
+            if token[1] == '':          # no annotation
                 token.pop()
-            self.print('|'.join(token))
+
+        self.print('|'.join(token))
 
     def write_delta(self, delta):
         for op, link in delta:

@@ -67,6 +67,10 @@ def _get_links_header(args):
         except KeyError:
             meta[f] = None
 
+    for f in ['sourceproperty', 'targetproperty']:
+        if meta[f]:
+            meta[f] = 'http://www.wikidata.org/entity/' + meta[f]
+
     return meta
 
 
