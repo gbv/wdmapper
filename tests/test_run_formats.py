@@ -4,8 +4,15 @@ from __future__ import unicode_literals
 import pytest
 import io
 import sys
+import codecs
+import functools
 
 from wdmapper.cli import run
+
+
+def slurp(filename):
+    with codecs.open(filename, 'r', encoding='utf8') as f:
+        return f.read()
 
 
 def test_read_csv_stdin(stdin, capsys):
@@ -26,16 +33,21 @@ def test_read_csv_file(capsys):
 def test_csv_to_beacon_as_default(capsys):
     run('convert', '-i', 'tests/simple.csv')
     out, err = capsys.readouterr()
-    assert out.startswith('#FORMAT: BEACON\n')
+    assert out == slurp('tests/simple.txt')
 
 
 def test_csv_to_beacon(capsys):
     run('convert', '-i', 'tests/simple.csv', '-t', 'beacon')
     out, err = capsys.readouterr()
-    expect = "#FORMAT: BEACON\n\nxyz|☃|123\n"
-    assert out == expect
+    assert out == slurp('tests/simple.txt')
 
 
+def test_csv_to_jskos(capsys):
+    run('convert', '-i', 'tests/simple.csv', '-t', 'jskos')
+    out, err = capsys.readouterr()
+    assert out == slurp('tests/simple.ndjson')
+
+ 
 def test_unknown_format(capsys):
     with pytest.raises(SystemExit):
         run('-f', 'xxx')

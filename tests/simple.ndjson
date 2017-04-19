@@ -1,0 +1,1 @@
+{"from": {"memberSet": [{"notation": "xyz"}]}, "to": {"memberSet": [{"notation": "123"}]}, "type": ["http://www.w3.org/2000/01/rdf-schema#seeAlso"]}
