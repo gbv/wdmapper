@@ -1,7 +1,7 @@
 History
 =======
 
-0.0.11 (2017-04-19)
+0.0.13 (2017-04-19)
 -------------------
 -  Extend output formats
 -  Fix Unicode output when writing to files
