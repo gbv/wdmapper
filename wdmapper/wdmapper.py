@@ -16,7 +16,7 @@ from .property import Property
 
 from .format import readers, writers, guessFormat
 
-__version__ = '0.0.11'
+__version__ = '0.0.12'
 """Version number of module wdmapper."""
 
 commands = ['get', 'head', 'check', 'diff', 'convert', 'add', 'sync']
@@ -91,7 +91,7 @@ def _get_reader(args):
 
         if 'prefix' in meta:
             source = meta['prefix']  # TODO: rename
-            if source == 'http://www.wikidata.org/entity/':
+            if source in ['http://www.wikidata.org/entity/', 'http://www.wikidata.org/entity/$1']:
                 source = Property({
                     'template': 'http://www.wikidata.org/entity/',
                     'label': 'Wikidata ID',
