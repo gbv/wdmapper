@@ -176,4 +176,7 @@ def _link_from_wdsparql_row(row):
     if 'source' in row:
         return Link(row['source'], row['target'], qid)
     else:
-        return Link(qid, row['target'], row['annotation'])
+        if row['annotation'] == qid:
+            return Link(qid, row['target'], None)
+        else:
+            return Link(qid, row['target'], row['annotation'])
