@@ -15,15 +15,15 @@ name = 'quicks'
 class Writer(DeltaWriter):
 
     def write_edit(self, link, prefix=''):
+        targetprop = re.sub('.*/', '', self.meta['targetproperty'])
         if self.meta['sourceproperty']:
             qid = prefix + link.annotation
             sourceprop = re.sub('.*/', '', self.meta['sourceproperty'])
-            targetprop = re.sub('.*/', '', self.meta['sourceproperty'])
             self.statement(qid, sourceprop, link.source)
             self.statement(qid, targetprop, link.target)
         else:
             qid = prefix + link.source
-            self.statement(qid, self.meta['targetproperty'], link.target)
+            self.statement(qid, targetprop, link.target)
 
     def statement(self, qid, prop, value):
         self.print('%s\t%s\t"%s"' % (qid, prop, value))

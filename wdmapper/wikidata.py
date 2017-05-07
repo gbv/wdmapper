@@ -10,6 +10,8 @@ from .sparql import SparqlEndpoint
 from .property import Property
 from .link import Link
 
+from .queries import delta_query
+
 
 def get_property(p, endpoint, language='en'):
     """Get property data from Wikidata."""
@@ -120,31 +122,8 @@ def get_deltas(source, target, links, endpoint, language='en', **args):
     if language is None:
         language = 'en'
 
-    if source is None:
-        sparql = """SELECT DISTINCT ?item ?target ?annotation WHERE {{
-          {{
-             BIND ("{target}" as ?target)
-             {{ ?item wdt:{p_target} ?target }} UNION
-             {{ BIND(<http://www.wikidata.org/entity/{source}> as ?item ) .
-                ?item wdt:{p_target} ?target }}
-             OPTIONAL {{ ?item rdfs:label ?annotation.
-                       FILTER(LANG(?annotation) = "{language}") }}
-          }}
-        }}"""
-    else:
-        sparql = """SELECT DISTINCT ?source ?item ?target WHERE {{
-          {{ {{ ?item wdt:{p_source} "{source}" }} UNION
-             {{ ?item wdt:{p_target} "{target}" }} }}
-          OPTIONAL {{ ?item wdt:{p_source} ?source }}
-          OPTIONAL {{ ?item wdt:{p_target} ?target }}
-        }}"""
-
     for link in links:
-        query = sparql.format(source=link.source,
-                              target=link.target,
-                              p_source=source.id if source else None,
-                              p_target=target.id,
-                              language=language)
+        query = delta_query(link, source, target, language)
         res = endpoint.query(query)
         wd_links = [_link_from_wdsparql_row(row) for row in res]
 
