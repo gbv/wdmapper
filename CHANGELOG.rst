@@ -1,7 +1,7 @@
 History
 =======
 
-0.0.13 (2017-04-19)
+0.0.15 (2017-05-07)
 -------------------
 -  Use empty string instead of Wikidata-ID as default annotation
 -  Allow to disable labels by setting language to empty string 

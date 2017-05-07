@@ -2,6 +2,43 @@
 from __future__ import unicode_literals
 
 
+def links_query(source, target, sort, limit, language, type):
+
+    if not source or not hasattr(source,'id'):
+        fields = '?target'
+        query = """\
+SELECT ?item ?target ?annotation WHERE {
+    ?item wdt:%s ?target .
+""" % (target.id)
+
+        if language:
+            query += """\
+    SERVICE wikibase:label {
+      bd:serviceParam wikibase:language "%s" .
+      ?item rdfs:label ?annotation .
+    }\n""" % language
+
+    else:
+        fields = '?source ?target'
+        query = """\
+SELECT ?item ?source ?target WHERE {
+    ?item wdt:%s ?source .
+    ?item wdt:%s ?target .
+""" % (source.id, target.id)
+
+    if type:
+        query += '?item wdt:P31/wdt:P279* wd:%s' % (type)
+
+    query += '}'
+
+    if (sort):
+        query += '\nORDER BY ' + fields
+    if (limit):
+        query += '\nLIMIT {:d}'.format(limit)
+
+    return query
+
+
 def delta_query(link, source, target, language):
     statements = []
     optional = ''

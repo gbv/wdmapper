@@ -10,7 +10,7 @@ from .sparql import SparqlEndpoint
 from .property import Property
 from .link import Link
 
-from .queries import delta_query
+from .queries import links_query, delta_query
 
 
 def get_property(p, endpoint, language='en'):
@@ -70,41 +70,7 @@ def get_property(p, endpoint, language='en'):
 def get_links(source, target, endpoint, sort=False, limit=0, language='en', type='', **args):
     """Get an iterator of links with given properties."""
 
-    if language is None:
-        language = 'en'
-
-    if not source or not hasattr(source,'id'):
-        # TODO: wikibase:label service will use QID as default
-        # better use empty string instead!
-        query = """\
-SELECT ?item ?target ?annotation WHERE {{
-    ?item wdt:{target[id]} ?target .
-    SERVICE wikibase:label {{
-      bd:serviceParam wikibase:language "{language}" .
-      ?item rdfs:label ?annotation .
-    }}
-"""
-        fields = '?target'
-    else:
-        query = """\
-SELECT ?item ?source ?target WHERE {{
-    ?item wdt:{source[id]} ?source .
-    ?item wdt:{target[id]} ?target .
-"""
-        fields = '?source ?target'
-
-    if type:
-        query += '?item wdt:P31/wdt:P279* wd:%s' % (type)
-
-    query += '}}'
-
-    query = query.format(source=source, target=target,
-                         language=language, type=type or '')
-
-    if (sort):
-        query += '\nORDER BY ' + fields
-    if (limit):
-        query += '\nLIMIT {:d}'.format(limit)
+    query = links_query(source, target, sort, limit, language, type)
 
     res = endpoint.query(query)
 
