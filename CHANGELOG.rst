@@ -3,6 +3,11 @@ History
 
 0.0.13 (2017-04-19)
 -------------------
+-  Use empty string instead of Wikidata-ID as default annotation
+-  Allow to disable labels by setting language to empty string 
+
+0.0.13 (2017-04-19)
+-------------------
 -  Extend output formats
 -  Fix Unicode output when writing to files
 
