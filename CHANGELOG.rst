@@ -1,6 +1,10 @@
 History
 =======
 
+0.0.16 (2017-05-24)
+-------------------
+-  Prefer property P1921 (RDF URI Template) over P1630 (formatter URL)
+
 0.0.15 (2017-05-07)
 -------------------
 -  Use empty string instead of Wikidata-ID as default annotation

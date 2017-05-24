@@ -20,7 +20,7 @@ def test_property(capsys):
 #NAME: VIAF ID
 #DESCRIPTION: Mapping from Wikidata IDs to VIAF IDs
 #PREFIX: http://www.wikidata.org/entity/
-#TARGET: https://viaf.org/viaf/
+#TARGET: http://viaf.org/viaf/
 """)
 
 

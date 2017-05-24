@@ -39,6 +39,7 @@ def get_property(p, endpoint, language='en'):
                 {0} .
                 ?p a wikibase:Property .
                 ?p wikibase:propertyType ?type .
+                OPTIONAL {{ ?p wdt:P1921 ?template }}
                 OPTIONAL {{ ?p wdt:P1630 ?template }}
                 OPTIONAL {{ ?p wdt:P1793 ?pattern }}
                 OPTIONAL {{
