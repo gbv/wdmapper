@@ -27,8 +27,8 @@ def get_property(p, endpoint, language='en'):
     elif Property.ns_pattern.match(p):
         # get by URL templateL (P1630)
         url = p + '$1' if p.find('$1') == -1 else p
-        formatter_url = json.dumps(url)   # quote and escape literal
-        where = '?p wdt:P1630 %s' % formatter_url
+        template = json.dumps(url)   # quote and escape literal
+        where = '?p (wdt:P1921|wdt:P1630) %s' % (template)
     else:
         # get by label
         label = json.dumps(p)           # quote and escape literal

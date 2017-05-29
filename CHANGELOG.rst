@@ -1,6 +1,10 @@
 History
 =======
 
+0.0.17 (2017-05-29)
+-------------------
+-  Fix lookup by URI Template
+
 0.0.16 (2017-05-24)
 -------------------
 -  Prefer property P1921 (RDF URI Template) over P1630 (formatter URL)

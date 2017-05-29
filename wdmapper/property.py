@@ -46,7 +46,7 @@ class Property(object):
         if (self.type not in ['http://wikiba.se/ontology#ExternalId', 'http://wikiba.se/ontology#String']):
             error = 'property {id} is not of type external-id or string!'
         elif not self.template:
-            error = 'property {id} lacks URL template (P1630)'
+            error = 'property {id} lacks URL or URI template (P1921|P1630)'
         else:
             return
         raise WdmapperError(error.format(id=self.id))
