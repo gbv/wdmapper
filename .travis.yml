@@ -4,10 +4,12 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
-before_install:
-  - pip install -r dev-requirements.txt --upgrade
+  - "nightly"
+install:
+  - pip install -r requirements.txt
+  - pip install -r test-requirements.txt
   - pip install coveralls
 script:
-  - PYTHONPATH=. pytest
+  - python -m pytest
 after_success:
   - coveralls

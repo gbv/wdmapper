@@ -1,6 +1,5 @@
-pytest
-pytest-pep8 
-pytest-cov
+-rrequirements.txt
+-rtest-requirements.txt
 
 sphinx-autobuild
 sphinx_rtd_theme
