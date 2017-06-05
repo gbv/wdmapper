@@ -25,7 +25,7 @@ Development requirements
 ------------------------
 
 Additional requirements for development are listed in ``dev-requirements.txt``.
-Install via ``pip -r dev-requirements.txt``.
+Install via ``pip install -r dev-requirements.txt``.
 
 Testing
 -------
